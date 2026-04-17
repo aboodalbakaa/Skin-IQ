@@ -48,7 +48,13 @@
     "price_wholesale": "Wholesale Price",
     "wishlist": "Wishlist",
     "new_arrival": "New",
-    "best_seller": "Best Seller"
+    "best_seller": "Best Seller",
+    "specifications": "Specifications",
+    "how_to_use": "How to Use",
+    "related_products": "You Might Also Like",
+    "details": "Details",
+    "description": "Description",
+    "gallery_swipe": "Flick through photos"
   },
   "Cart": {
     "title": "Your Cart",

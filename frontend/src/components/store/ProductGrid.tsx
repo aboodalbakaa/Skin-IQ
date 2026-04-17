@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useCartStore } from '@/store/cartStore';
 import { Heart, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from '@/i18n/routing';
 
 interface Product {
   id: string;
@@ -76,32 +77,34 @@ export default function ProductGrid({ products }: ProductGridProps) {
             </button>
 
             {/* Image Container */}
-            <div className="aspect-square bg-muted mb-4 overflow-hidden rounded-lg border border-border">
-              <img 
-                src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 flex flex-col pt-2">
-              <h3 className="font-bold text-slate-900 dark:text-white leading-tight min-h-[40px] line-clamp-2 uppercase tracking-tight text-xs sm:text-sm">
-                {product.name}
-              </h3>
-              
-              <div className="mt-2 flex flex-col gap-0.5">
-                <p className="text-primary dark:text-accent font-black text-sm sm:text-lg tracking-tight">
-                  {(product.discount_retail_price || product.retail_price).toLocaleString()} 
-                  <span className="text-[10px] sm:text-xs ml-1 opacity-70 uppercase font-bold">{tCommon('iqd')}</span>
-                </p>
-                {product.discount_retail_price && (
-                  <p className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
-                    {product.retail_price.toLocaleString()} {tCommon('iqd')}
-                  </p>
-                )}
+            <Link href={`/products/${product.id}`} className="block">
+              <div className="aspect-square bg-muted mb-4 overflow-hidden rounded-lg border border-border">
+                <img 
+                  src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
+                  alt={product.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
               </div>
-            </div>
+
+              {/* Content */}
+              <div className="flex-1 flex flex-col pt-2">
+                <h3 className="font-bold text-slate-900 dark:text-white leading-tight min-h-[40px] line-clamp-2 uppercase tracking-tight text-xs sm:text-sm group-hover:text-primary transition-colors">
+                  {product.name}
+                </h3>
+                
+                <div className="mt-2 flex flex-col gap-0.5">
+                  <p className="text-primary dark:text-accent font-black text-sm sm:text-lg tracking-tight">
+                    {(product.discount_retail_price || product.retail_price).toLocaleString()} 
+                    <span className="text-[10px] sm:text-xs ml-1 opacity-70 uppercase font-bold">{tCommon('iqd')}</span>
+                  </p>
+                  {product.discount_retail_price && (
+                    <p className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
+                      {product.retail_price.toLocaleString()} {tCommon('iqd')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Link>
             
             {/* Add to Cart */}
             <button 

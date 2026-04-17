@@ -14,6 +14,11 @@ export interface Product {
   discount_wholesale_price?: number | null;
   is_active: boolean;
   image_url?: string;
+  images?: string[];
+  video_url?: string;
+  specs?: string;
+  how_to_use?: string;
+  category?: string;
   created_at?: string;
 }
 
@@ -190,6 +195,67 @@ export default function ProductForm({ product, onClose, onSuccess }: ProductForm
               rows={3}
               defaultValue={product?.description || ''}
               placeholder="Brief product description..."
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Category */}
+            <div>
+              <label htmlFor="product-category" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Category
+              </label>
+              <input
+                id="product-category"
+                name="category"
+                type="text"
+                defaultValue={product?.category || ''}
+                placeholder="e.g., Serums"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+              />
+            </div>
+            {/* Video URL */}
+            <div>
+              <label htmlFor="video-url" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Video URL (YouTube/Vimeo)
+              </label>
+              <input
+                id="video-url"
+                name="video_url"
+                type="text"
+                defaultValue={product?.video_url || ''}
+                placeholder="https://youtube.com/..."
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+
+          {/* Specifications */}
+          <div>
+            <label htmlFor="product-specs" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              Specifications (One per line)
+            </label>
+            <textarea
+              id="product-specs"
+              name="specs"
+              rows={3}
+              defaultValue={product?.specs || ''}
+              placeholder="pH: 5.5&#10;Size: 30ml&#10;Skin Type: All"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 resize-none font-mono"
+            />
+          </div>
+
+          {/* How to Use */}
+          <div>
+            <label htmlFor="how-to-use" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+              How to Use
+            </label>
+            <textarea
+              id="how-to-use"
+              name="how_to_use"
+              rows={3}
+              defaultValue={product?.how_to_use || ''}
+              placeholder="Apply 2-3 drops to clean skin..."
               className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 resize-none"
             />
           </div>

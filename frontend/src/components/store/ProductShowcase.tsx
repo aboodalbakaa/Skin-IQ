@@ -3,7 +3,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCartStore } from '@/store/cartStore';
-import { ShoppingBag, Star, ChevronRight, ChevronLeft, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Star, ChevronRight, ChevronLeft, ArrowRight, Plus } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 
 interface Product {
   id: string;
@@ -136,11 +137,11 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
               </div>
 
               {/* Info */}
-              <div className="flex-1 px-2 space-y-2">
+              <Link href={`/products/${product.id}`} className="flex-1 px-2 space-y-2 cursor-pointer">
                 <div className="flex items-center gap-1 text-amber-400">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
                 </div>
-                <h3 className="text-sm lg:text-lg font-bold text-foreground leading-tight line-clamp-2">
+                <h3 className="text-sm lg:text-lg font-bold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                   {product.name}
                 </h3>
                 <div className="flex justify-between items-end pt-2">
@@ -159,7 +160,7 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
                     <ArrowRight className="w-5 h-5" />
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         ))}
@@ -194,5 +195,3 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
     </div>
   );
 }
-
-import { Plus } from 'lucide-react';

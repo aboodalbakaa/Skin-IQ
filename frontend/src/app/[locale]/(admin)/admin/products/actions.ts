@@ -65,6 +65,11 @@ export async function createProduct(formData: FormData) {
   const discount_wholesale_price = discount_wholesale_str ? parseFloat(discount_wholesale_str) : null;
 
   const is_active = formData.get('is_active') === 'true';
+  const category = formData.get('category') as string;
+  const specs = formData.get('specs') as string;
+  const how_to_use = formData.get('how_to_use') as string;
+  const video_url = formData.get('video_url') as string;
+  
   const imageFile = formData.get('image') as File | null;
 
   if (!name || isNaN(retail_price) || isNaN(wholesale_price)) {
@@ -76,7 +81,6 @@ export async function createProduct(formData: FormData) {
     image_url = await uploadImageToStorage(imageFile);
     if (!image_url) {
       console.warn('Image upload skipped — product-images bucket may not exist yet.');
-      // Non-blocking: proceed without image
     }
   }
 
@@ -88,10 +92,15 @@ export async function createProduct(formData: FormData) {
     discount_retail_price,
     discount_wholesale_price,
     is_active,
+    category: category || '',
+    specs: specs || '',
+    how_to_use: how_to_use || '',
+    video_url: video_url || '',
   };
 
   if (image_url) {
     payload.image_url = image_url;
+    payload.images = [image_url];
   }
 
   const { error } = await supabase
@@ -126,6 +135,11 @@ export async function updateProduct(formData: FormData) {
   const discount_wholesale_price = discount_wholesale_str ? parseFloat(discount_wholesale_str) : null;
 
   const is_active = formData.get('is_active') === 'true';
+  const category = formData.get('category') as string;
+  const specs = formData.get('specs') as string;
+  const how_to_use = formData.get('how_to_use') as string;
+  const video_url = formData.get('video_url') as string;
+  
   const imageFile = formData.get('image') as File | null;
   const existing_image_url = formData.get('existing_image_url') as string | null;
 
@@ -155,10 +169,15 @@ export async function updateProduct(formData: FormData) {
     discount_retail_price,
     discount_wholesale_price,
     is_active,
+    category: category || '',
+    specs: specs || '',
+    how_to_use: how_to_use || '',
+    video_url: video_url || '',
   };
 
   if (image_url) {
     payload.image_url = image_url;
+    payload.images = [image_url];
   }
 
   const { error } = await supabase

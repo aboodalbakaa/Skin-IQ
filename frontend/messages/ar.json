@@ -48,7 +48,13 @@
     "price_wholesale": "سعر الجملة",
     "wishlist": "قائمة الأمنيات",
     "new_arrival": "جديد",
-    "best_seller": "الأكثر مبيعاً"
+    "best_seller": "الأكثر مبيعاً",
+    "specifications": "المواصفات",
+    "how_to_use": "طريقة الاستخدام",
+    "related_products": "قد يعجبك أيضاً",
+    "details": "التفاصيل",
+    "description": "الوصف",
+    "gallery_swipe": "مرر لمشاهدة الصور"
   },
   "Cart": {
     "title": "سلة التسوق",
