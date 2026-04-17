@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Sparkles, Leaf, ShieldPulse, HeartPulse, Droplets } from 'lucide-react';
+import { Sparkles, Leaf, Shield, Heart, Droplets } from 'lucide-react';
 
 const CATEGORIES = [
   { id: 'all', label: 'Full Sanctuary', icon: Sparkles },
   { id: 'cleansers', label: 'Pure Cleansing', icon: Droplets },
-  { id: 'moisturizers', label: 'Deep Hydration', icon: ShieldPulse },
-  { id: 'serums', label: 'Active Serums', icon: HeartPulse },
+  { id: 'moisturizers', label: 'Deep Hydration', icon: Shield },
+  { id: 'serums', label: 'Active Serums', icon: Heart },
   { id: 'organic', label: 'Earth Origins', icon: Leaf },
 ];
 
