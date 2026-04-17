@@ -1,7 +1,7 @@
 # 🏛️ Gemini - Master Data Schema
 
 ## Overview
-This file serves as the definitive source of truth for the JSON Data Schema (Input/Output shapes) across the **Idris - Wellness Project** system. Coding tools or writing database migrations MUST adhere to this defined shape.
+This file serves as the definitive source of truth for the JSON Data Schema (Input/Output shapes) across the **SkinIQ** system. Coding tools or writing database migrations MUST adhere to this defined shape.
 
 ## JSON Data Schema
 
