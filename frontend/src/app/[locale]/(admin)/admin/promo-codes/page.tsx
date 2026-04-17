@@ -86,9 +86,10 @@ export default async function PromoCodesPage() {
           </div>
         </div>
 
-        {/* Codes Table */}
+        {/* Codes Table/Cards */}
         <div className="lg:col-span-2">
-          <div className="glass rounded-[2rem] border border-border overflow-hidden">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block glass rounded-[2rem] border border-border overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border">
@@ -159,16 +160,81 @@ export default async function PromoCodesPage() {
                     </td>
                   </tr>
                 ))}
-                {(!promoCodes || promoCodes.length === 0) && (
-                  <tr>
-                    <td colSpan={4} className="px-8 py-20 text-center text-slate-400 italic">
-                      No promo codes created yet.
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="sm:hidden space-y-4">
+            {promoCodes?.map((promo) => (
+              <div key={promo.id} className="glass p-6 rounded-3xl border border-border flex flex-col gap-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500">
+                      <Ticket className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold tracking-[0.2em] text-slate-900 dark:text-white uppercase">{promo.code}</h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
+                        {promo.discount_type === 'percentage' ? 'Percentage Discount' : 'Fixed Amount'}
+                      </p>
+                    </div>
+                  </div>
+                  {promo.is_active ? (
+                    <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[8px] font-black rounded-full uppercase tracking-widest">
+                      Active
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-400 text-[8px] font-black rounded-full uppercase tracking-widest">
+                      Inactive
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between border-y border-border py-4">
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Total Discount</span>
+                   <span className="text-2xl font-black text-accent">
+                    {promo.discount_type === 'percentage' ? (
+                      <>{promo.discount_value}%</>
+                    ) : (
+                      <>
+                        {promo.discount_value.toLocaleString()} <span className="text-xs uppercase tracking-widest text-slate-400">IQD</span>
+                      </>
+                    )}
+                   </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <form className="flex-1" action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
+                    <button 
+                      type="submit"
+                      className={`w-full py-4 rounded-2xl border font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 ${
+                        promo.is_active 
+                          ? "text-amber-500 border-amber-500/20 bg-amber-500/5" 
+                          : "text-emerald-500 border-emerald-500/20 bg-emerald-500/5"
+                      }`}
+                    >
+                      {promo.is_active ? <><PowerOff className="w-4 h-4" /> Deactivate</> : <><Power className="w-4 h-4" /> Activate</>}
+                    </button>
+                  </form>
+                  <form action={async () => { 'use server'; await deletePromoCode(promo.id); }}>
+                    <button 
+                      type="submit"
+                      className="p-4 rounded-2xl border border-red-500/20 text-red-500 bg-red-500/5 transition-all"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {(!promoCodes || promoCodes.length === 0) && (
+            <div className="glass p-20 rounded-[2rem] border border-border text-center text-slate-400 italic">
+              No promo codes created yet.
+            </div>
+          )}
         </div>
       </div>
     </div>

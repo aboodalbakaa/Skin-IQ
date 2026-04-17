@@ -85,20 +85,28 @@ export default function ProductGrid({ products }: ProductGridProps) {
             </div>
 
             {/* Content */}
-            <h3 className="font-semibold text-foreground leading-snug">{product.name}</h3>
-            <p className="text-primary font-medium mt-1 flex items-baseline gap-2">
-              <span>{(product.discount_retail_price || product.retail_price).toLocaleString()} {tCommon('iqd')}</span>
-              {product.discount_retail_price && (
-                <span className="text-sm text-slate-400 line-through">
-                  {product.retail_price.toLocaleString()}
-                </span>
-              )}
-            </p>
+            <div className="flex-1 flex flex-col pt-2">
+              <h3 className="font-bold text-slate-900 dark:text-white leading-tight min-h-[40px] line-clamp-2 uppercase tracking-tight text-xs sm:text-sm">
+                {product.name}
+              </h3>
+              
+              <div className="mt-2 flex flex-col gap-0.5">
+                <p className="text-primary dark:text-accent font-black text-sm sm:text-lg tracking-tight">
+                  {(product.discount_retail_price || product.retail_price).toLocaleString()} 
+                  <span className="text-[10px] sm:text-xs ml-1 opacity-70 uppercase font-bold">{tCommon('iqd')}</span>
+                </p>
+                {product.discount_retail_price && (
+                  <p className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
+                    {product.retail_price.toLocaleString()} {tCommon('iqd')}
+                  </p>
+                )}
+              </div>
+            </div>
             
             {/* Add to Cart */}
             <button 
               onClick={() => addItem({ ...product, price: product.discount_retail_price || product.retail_price, quantity: 1 })}
-              className="mt-4 flex items-center justify-center gap-2 w-full py-3 border border-border rounded-full text-sm font-medium transition-all hover:border-primary hover:bg-primary hover:text-white group-hover:shadow-md"
+              className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-primary hover:text-white hover:border-primary active:scale-[0.98] shadow-sm hover:shadow-xl hover:shadow-primary/20"
             >
               <Plus className="w-4 h-4" />
               {t('add_to_cart')}
