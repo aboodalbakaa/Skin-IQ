@@ -1,0 +1,76 @@
+{
+  "Common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "error": "Something went wrong. Please try again later.",
+    "success": "Operation successful!",
+    "iqd": "IQD"
+  },
+  "Navbar": {
+    "home": "Home",
+    "shop": "Shop",
+    "wholesale": "Wholesale Access",
+    "account": "Account",
+    "search": "Search products...",
+    "cart": "Shopping Cart"
+  },
+  "Index": {
+    "title": "SkinIQ",
+    "subtitle": "Your premium AI-driven destination for holistic health, exclusive wholesale ordering, and uncompromising quality.",
+    "shop": "Shop Collection",
+    "wholesale": "Wholesale Login",
+    "footer": "© 2026 SkinIQ. Powered by the A.N.T. System."
+  },
+  "Wholesale": {
+    "login_title": "Wholesale Login",
+    "register_title": "Partner Registration",
+    "login_subtitle": "Access the secure B2B pricing portal.",
+    "register_subtitle": "Apply for verified wholesale purchasing access.",
+    "full_name": "Full Name",
+    "business_name": "Pharmacy / Business Name",
+    "phone_number": "Phone Number",
+    "email": "Email Address",
+    "password": "Password",
+    "submit_login": "Secure Login",
+    "submit_register": "Submit Application",
+    "no_account": "Don't have an account? Apply for Wholesale.",
+    "has_account": "Already verified? Login here.",
+    "pending_msg": "Registration successful! Your account is pending Super-Admin wholesale verification.",
+    "login_error": "Invalid login credentials."
+  },
+  "Products": {
+    "add_to_cart": "Add to cart",
+    "filter": "Filter",
+    "sort": "Sort",
+    "price_retail": "Retail Price",
+    "price_wholesale": "Wholesale Price",
+    "wishlist": "Wishlist",
+    "new_arrival": "New",
+    "best_seller": "Best Seller"
+  },
+  "Cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is currently empty.",
+    "checkout": "Checkout",
+    "total": "Total Amount",
+    "remove": "Remove",
+    "added_to_cart": "Added to Cart",
+    "quantity": "Qty",
+    "view_cart": "View Cart"
+  },
+  "Admin": {
+    "login_title": "Admin Gateway",
+    "login_subtitle": "Strictly authorized personnel only.",
+    "products_manage": "Manage Products",
+    "add_product": "Add Product",
+    "edit_product": "Edit Product",
+    "orders": "Orders & Debt",
+    "users": "Partner Requests",
+    "reports": "Export Reports",
+    "dashboard": "Dashboard",
+    "wholesale_approvals": "Wholesale Approvals",
+    "back_to_store": "Back to Store"
+  }
+}
