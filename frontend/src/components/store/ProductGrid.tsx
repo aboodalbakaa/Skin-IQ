@@ -93,12 +93,12 @@ export default function ProductGrid({ products }: ProductGridProps) {
                 </h3>
                 
                 <div className="mt-2 flex flex-col gap-0.5">
-                  <p className="text-primary dark:text-accent font-black text-sm sm:text-lg tracking-tight">
+                  <p className="text-primary dark:text-accent font-black text-sm sm:text-lg tracking-tight tabular-nums">
                     {(product.discount_retail_price || product.retail_price).toLocaleString()} 
-                    <span className="text-[10px] sm:text-xs ml-1 opacity-70 uppercase font-bold">{tCommon('iqd')}</span>
+                    <span className="text-[10px] sm:text-xs ml-1 opacity-90 uppercase font-black">{tCommon('iqd')}</span>
                   </p>
                   {product.discount_retail_price && (
-                    <p className="text-[10px] sm:text-xs text-slate-400 line-through font-medium">
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-through font-bold">
                       {product.retail_price.toLocaleString()} {tCommon('iqd')}
                     </p>
                   )}

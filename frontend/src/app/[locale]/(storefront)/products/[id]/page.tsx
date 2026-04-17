@@ -34,24 +34,28 @@ export default async function ProductDetailPage({
   const supabase = await createClient();
   
   // Fetch main product
-  const { data: product } = await supabase
+  const { data: rawProduct } = await supabase
     .from('products')
     .select('*')
     .eq('id', id)
     .single();
 
-  if (!product) {
+  if (!rawProduct) {
     notFound();
   }
 
+  const product = rawProduct as Product;
+
   // Fetch related products (same category, limit 4)
-  const { data: relatedProducts } = await supabase
+  const { data: rawRelated } = await supabase
     .from('products')
     .select('*')
     .eq('is_active', true)
     .eq('category', product.category || '')
     .neq('id', id)
     .limit(4);
+
+  const relatedProducts = (rawRelated as Product[]) || [];
 
   const displayImages = product.images && product.images.length > 0 ? product.images : [product.image_url];
   const specsList = product.specs ? product.specs.split('\n').filter((s: string) => s.trim()) : [];

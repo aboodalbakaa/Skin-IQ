@@ -141,13 +141,13 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
                 <div className="flex items-center gap-1 text-amber-400">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
                 </div>
-                <h3 className="text-sm lg:text-lg font-bold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                <h3 className="text-sm lg:text-lg font-black text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                   {product.name}
                 </h3>
                 <div className="flex justify-between items-end pt-2">
                   <div>
-                    <span className="text-xs text-slate-400 font-bold uppercase tracking-widest block mb-1">Retail Price</span>
-                    <span className="text-xl font-black text-primary flex items-baseline gap-2">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em] block mb-1">Retail Price</span>
+                    <span className="text-xl font-black text-primary flex items-baseline gap-2 tabular-nums">
                       {(product.discount_retail_price || product.retail_price).toLocaleString()} <span className="text-xs">IQD</span>
                       {product.discount_retail_price && (
                         <span className="text-sm font-medium text-slate-400 line-through">

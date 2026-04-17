@@ -11,7 +11,11 @@ export const routing = defineRouting({
  
 const intlMiddleware = createMiddleware(routing);
 
-export default async function middleware(request: NextRequest) {
+/**
+ * Next.js 16 Proxy convention (formerly Middleware)
+ * This sits at the network boundary for request interception.
+ */
+export default async function proxy(request: NextRequest) {
   // 1. Run localization (sets headers, language cookies)
   const response = intlMiddleware(request);
   
