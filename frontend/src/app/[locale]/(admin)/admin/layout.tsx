@@ -1,4 +1,8 @@
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { getTranslations } from 'next-intl/server';
+import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
+import React from 'react';
 
 export default async function AdminLayout({
   children,
