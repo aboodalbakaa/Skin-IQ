@@ -14,6 +14,7 @@ interface Product {
   discount_wholesale_price?: number | null;
   image_url: string;
   is_wholesale?: boolean;
+  is_out_of_stock?: boolean;
   badge?: string;
 }
 
@@ -78,11 +79,18 @@ export default function ProductGrid({ products }: ProductGridProps) {
 
             {/* Image Container */}
             <Link href={`/products/${product.id}`} className="block">
-              <div className="aspect-square bg-muted mb-4 overflow-hidden rounded-lg border border-border">
+              <div className="aspect-square bg-muted mb-4 overflow-hidden rounded-lg border border-border relative">
+                {product.is_out_of_stock && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <span className="px-4 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
+                      Sold Out
+                    </span>
+                  </div>
+                )}
                 <img 
                   src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                 />
               </div>
 
@@ -107,13 +115,19 @@ export default function ProductGrid({ products }: ProductGridProps) {
             </Link>
             
             {/* Add to Cart */}
-            <button 
-              onClick={() => addItem({ ...product, price: product.discount_retail_price || product.retail_price, quantity: 1 })}
-              className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-primary hover:text-white hover:border-primary active:scale-[0.98] shadow-sm hover:shadow-xl hover:shadow-primary/20"
-            >
-              <Plus className="w-4 h-4" />
-              {t('add_to_cart')}
-            </button>
+            {product.is_out_of_stock ? (
+              <div className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-not-allowed">
+                Out of Stock
+              </div>
+            ) : (
+              <button 
+                onClick={() => addItem({ ...product, price: product.discount_retail_price || product.retail_price, quantity: 1 })}
+                className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-primary hover:text-white hover:border-primary active:scale-[0.98] shadow-sm hover:shadow-xl hover:shadow-primary/20"
+              >
+                <Plus className="w-4 h-4" />
+                {t('add_to_cart')}
+              </button>
+            )}
           </div>
         ))}
       </div>

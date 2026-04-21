@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from 'react';
-import { Pencil, Trash2, Eye, EyeOff, Plus, Search, Package, Loader2, AlertTriangle } from 'lucide-react';
+import { Pencil, Trash2, Eye, EyeOff, Plus, Search, Package, Loader2, AlertTriangle, PackageX } from 'lucide-react';
 import { deleteProduct, toggleProductActive } from '@/app/[locale]/(admin)/admin/products/actions';
 import ProductForm, { type Product } from './ProductForm';
 import { useRouter } from 'next/navigation';
@@ -169,21 +169,28 @@ export default function ProductTable({ products }: ProductTableProps) {
 
                     {/* Status */}
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleToggleActive(product)}
-                        disabled={isPending}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer
-                          ${product.is_active
-                            ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
-                          }`}
-                      >
-                        {product.is_active ? (
-                          <><Eye className="w-3 h-3" /> Active</>
-                        ) : (
-                          <><EyeOff className="w-3 h-3" /> Draft</>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <button
+                          onClick={() => handleToggleActive(product)}
+                          disabled={isPending}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer
+                            ${product.is_active
+                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200 border border-slate-200'
+                            }`}
+                        >
+                          {product.is_active ? (
+                            <><Eye className="w-3 h-3" /> Active</>
+                          ) : (
+                            <><EyeOff className="w-3 h-3" /> Draft</>
+                          )}
+                        </button>
+                        {product.is_out_of_stock && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <PackageX className="w-3 h-3" /> Out of Stock
+                          </span>
                         )}
-                      </button>
+                      </div>
                     </td>
 
                     {/* Actions */}

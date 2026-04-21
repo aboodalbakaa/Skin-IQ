@@ -19,6 +19,7 @@ interface Product {
   specs?: string;
   how_to_use?: string;
   category?: string;
+  is_out_of_stock?: boolean;
 }
 
 export default async function ProductDetailPage({ 
@@ -142,18 +143,32 @@ export default async function ProductDetailPage({
 
               {/* Add to Cart - Large Premium Button */}
               <div className="pt-6">
-                <CartButtonDetails product={product} />
+                {product.is_out_of_stock ? (
+                  <div className="flex items-center justify-center gap-3 py-5 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 text-xs font-black uppercase tracking-[0.3em] cursor-not-allowed">
+                    Out of Stock
+                  </div>
+                ) : (
+                  <CartButtonDetails product={product} />
+                )}
               </div>
 
               {/* Quick Info Badges */}
               <div className="grid grid-cols-2 gap-4 pt-8">
-                 <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                 <div className="p-4 rounded-2xl flex items-center gap-3" style={{
+                   backgroundColor: product.is_out_of_stock ? 'rgb(255 251 235 / 1)' : 'rgb(236 253 245 / 1)',
+                   borderWidth: '1px',
+                   borderColor: product.is_out_of_stock ? 'rgb(254 243 199 / 1)' : 'rgb(209 250 229 / 1)',
+                 }}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${product.is_out_of_stock ? 'bg-amber-500' : 'bg-emerald-500'}`}>
                        <ShoppingBag className="w-5 h-5" />
                     </div>
                     <div>
-                       <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Available</p>
-                       <p className="text-xs font-medium text-slate-600 dark:text-slate-400">In Stock Now</p>
+                       <p className={`text-[10px] font-black uppercase tracking-widest ${product.is_out_of_stock ? 'text-amber-600' : 'text-emerald-600'}`}>
+                         {product.is_out_of_stock ? 'Sold Out' : 'Available'}
+                       </p>
+                       <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                         {product.is_out_of_stock ? 'Currently Unavailable' : 'In Stock Now'}
+                       </p>
                     </div>
                  </div>
                  <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 flex items-center gap-3">

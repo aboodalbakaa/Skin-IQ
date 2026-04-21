@@ -15,6 +15,7 @@ interface Product {
   image_url: string;
   badge?: string;
   is_wholesale?: boolean;
+  is_out_of_stock?: boolean;
 }
 
 interface ProductShowcaseProps {
@@ -118,19 +119,30 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
                 <img 
                   src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                   alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                 />
 
+                {/* Out of Stock Overlay */}
+                {product.is_out_of_stock && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
+                      Sold Out
+                    </span>
+                  </div>
+                )}
+
                 {/* Quick Action Overlay */}
-                <div className="absolute inset-x-2 lg:inset-x-4 bottom-2 lg:bottom-4 translate-y-0 lg:translate-y-20 lg:group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
-                  <button 
-                    onClick={() => addItem({ ...product, price: product.discount_retail_price || product.retail_price, quantity: 1 })}
-                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 shadow-2xl"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    Quick Add
-                  </button>
-                </div>
+                {!product.is_out_of_stock && (
+                  <div className="absolute inset-x-2 lg:inset-x-4 bottom-2 lg:bottom-4 translate-y-0 lg:translate-y-20 lg:group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
+                    <button 
+                      onClick={() => addItem({ ...product, price: product.discount_retail_price || product.retail_price, quantity: 1 })}
+                      className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 shadow-2xl"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      Quick Add
+                    </button>
+                  </div>
+                )}
                 
                 {/* Visual Polish */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

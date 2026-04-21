@@ -65,6 +65,7 @@ export async function createProduct(formData: FormData) {
   const discount_wholesale_price = discount_wholesale_str ? parseFloat(discount_wholesale_str) : null;
 
   const is_active = formData.get('is_active') === 'true';
+  const is_out_of_stock = formData.get('is_out_of_stock') === 'true';
   const category = formData.get('category') as string;
   const specs = formData.get('specs') as string;
   const how_to_use = formData.get('how_to_use') as string;
@@ -92,6 +93,7 @@ export async function createProduct(formData: FormData) {
     discount_retail_price,
     discount_wholesale_price,
     is_active,
+    is_out_of_stock,
     category: category || '',
     specs: specs || '',
     how_to_use: how_to_use || '',
@@ -135,6 +137,7 @@ export async function updateProduct(formData: FormData) {
   const discount_wholesale_price = discount_wholesale_str ? parseFloat(discount_wholesale_str) : null;
 
   const is_active = formData.get('is_active') === 'true';
+  const is_out_of_stock = formData.get('is_out_of_stock') === 'true';
   const category = formData.get('category') as string;
   const specs = formData.get('specs') as string;
   const how_to_use = formData.get('how_to_use') as string;
@@ -169,6 +172,7 @@ export async function updateProduct(formData: FormData) {
     discount_retail_price,
     discount_wholesale_price,
     is_active,
+    is_out_of_stock,
     category: category || '',
     specs: specs || '',
     how_to_use: how_to_use || '',
