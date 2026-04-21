@@ -3,6 +3,7 @@ import {Link} from '@/i18n/routing';
 import ProductGrid from '@/components/store/ProductGrid';
 import ProductShowcase from '@/components/store/ProductShowcase';
 import CategoryLuxe from '@/components/store/CategoryLuxe';
+import BundleOffersCarousel from '@/components/store/BundleOffersCarousel';
 import { createClient } from '@/utils/supabase/server';
 import { ArrowRight } from 'lucide-react';
 
@@ -17,6 +18,12 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
     .select('*')
     .eq('is_active', true)
     .limit(8);
+
+  const { data: bundleOffers } = await supabase
+    .from('bundle_offers')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -66,6 +73,19 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
       <section className="bg-white/50 dark:bg-transparent -mt-8 relative z-20">
         <CategoryLuxe />
       </section>
+
+      {/* 🔥 Bundle Offers Carousel */}
+      {bundleOffers && bundleOffers.length > 0 && (
+        <section className="relative w-full py-16 sm:py-20 overflow-hidden bg-gradient-to-b from-red-50/40 via-white/60 to-white dark:from-red-950/10 dark:via-transparent dark:to-transparent">
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute top-0 left-1/4 w-80 h-80 bg-red-500/5 blur-[120px] rounded-full" />
+            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-amber-500/5 blur-[120px] rounded-full" />
+          </div>
+          <div className="relative z-10">
+            <BundleOffersCarousel offers={bundleOffers} locale={locale} />
+          </div>
+        </section>
+      )}
 
       {/* Dynamic Product Showcase Section */}
       <section className="relative w-full py-24 overflow-hidden bg-white/30 dark:bg-transparent">
