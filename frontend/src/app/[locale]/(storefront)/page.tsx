@@ -60,10 +60,10 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
     <div className="min-h-screen bg-background overflow-x-hidden">
       
       {/* Premium Hero Section */}
-      <section className="relative w-full h-[90vh] flex flex-col lg:flex-row items-center justify-between">
+      <section className="relative w-full min-h-[90vh] flex flex-col lg:flex-row items-stretch justify-between">
         
         {/* Left Aspect: Content */}
-        <div className="flex-1 px-6 sm:px-12 lg:px-24 py-12 lg:py-0 flex flex-col justify-center max-w-4xl z-10">
+        <div className="flex-1 px-6 sm:px-12 lg:px-24 pt-32 pb-12 lg:py-0 flex flex-col justify-center max-w-4xl z-10">
           <div className="space-y-6">
             <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-primary text-[10px] font-bold tracking-widest uppercase">
               {heroConfig.badge_text}
@@ -87,14 +87,16 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
         </div>
 
         {/* Right Aspect: Lifestyle Imagery */}
-        <div className="flex-1 w-full lg:h-full relative overflow-hidden">
+        <div className="flex-1 w-full relative overflow-hidden min-h-[60vh] lg:min-h-0">
           <img 
             src={heroConfig.image_url || "/hero-skincare.png"} 
             alt="SkinIQ Luxury Skincare" 
-            className="w-full h-full object-cover lg:object-center grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
+            className="w-full h-full object-cover lg:object-center grayscale-[0.2] hover:grayscale-0 transition-all duration-1000 scale-105 hover:scale-100"
           />
-          {/* Subtle gradient overlay for text legibility on mobile */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent lg:hidden" />
+          {/* Refined gradient overlay for text legibility - much more subtle at the bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/40 to-transparent lg:hidden" />
+          {/* Soft vignette for depth */}
+          <div className="absolute inset-0 bg-black/5 lg:hidden pointer-events-none" />
         </div>
 
       </section>
