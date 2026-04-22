@@ -9,12 +9,14 @@ import { Link } from '@/i18n/routing';
 interface Product {
   id: string;
   name: string;
+  description: string;
   retail_price: number;
+  wholesale_price: number;
   discount_retail_price?: number | null;
   discount_wholesale_price?: number | null;
   image_url: string;
+  category?: string;
   badge?: string;
-  is_wholesale?: boolean;
   is_out_of_stock?: boolean;
 }
 
