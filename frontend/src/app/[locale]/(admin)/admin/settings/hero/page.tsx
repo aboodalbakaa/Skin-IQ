@@ -11,6 +11,7 @@ export default function HeroSettingsPage() {
     title: '',
     subtitle: '',
     image_url: '',
+    bg_image_url: '',
     button_text: '',
     button_link: '',
     badge_text: ''
@@ -36,7 +37,7 @@ export default function HeroSettingsPage() {
     loadConfig();
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image_url' | 'bg_image_url') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -47,8 +48,8 @@ export default function HeroSettingsPage() {
     try {
       const res = await uploadHeroImage(formData);
       if (res.success && res.url) {
-        setConfig(prev => ({ ...prev, image_url: res.url }));
-        toast.success("Image uploaded successfully!");
+        setConfig(prev => ({ ...prev, [field]: res.url }));
+        toast.success(`${field === 'image_url' ? 'Hero' : 'Background'} image uploaded!`);
       } else {
         toast.error("Upload failed: " + res.error);
       }
@@ -112,7 +113,7 @@ export default function HeroSettingsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Form Column */}
-        <form onSubmit={handleSave} className="space-y-6">
+        <div className="space-y-6">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-border shadow-sm space-y-8">
             
             {/* Badge Text */}
@@ -161,11 +162,46 @@ export default function HeroSettingsPage() {
               />
             </div>
 
+            {/* Background Texture/Image */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                <Sparkles className="w-3 h-3 text-primary" />
+                Text Background Overlay (Dynamic)
+              </label>
+              <div className="relative group">
+                {config.bg_image_url ? (
+                  <div className="relative w-full h-32 rounded-3xl overflow-hidden border border-border group-hover:border-primary/50 transition-all bg-muted">
+                    <img src={config.bg_image_url} alt="BG Texture" className="w-full h-full object-cover opacity-60" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
+                      <label className="p-3 bg-white text-slate-900 rounded-full cursor-pointer hover:scale-110 transition-all">
+                        <Upload className="w-4 h-4" />
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'bg_image_url')} />
+                      </label>
+                      <button 
+                        type="button"
+                        onClick={() => setConfig({ ...config, bg_image_url: '' })}
+                        className="p-3 bg-white text-red-500 rounded-full hover:scale-110 transition-all"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 rounded-3xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/30 hover:border-primary/50 transition-all cursor-pointer group">
+                    <Upload className="w-6 h-6 text-primary mb-2 opacity-40 group-hover:opacity-100 transition-all" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Upload Text Background Photo</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'bg_image_url')} />
+                  </label>
+                )}
+              </div>
+              <p className="text-[9px] text-muted-foreground italic leading-tight">This photo will appear subtly behind the hero text with a parallax flow effect.</p>
+            </div>
+
             {/* Hero Image Upload */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 <ImageIcon className="w-3 h-3 text-primary" />
-                Hero Image
+                Hero Image (Right Side)
               </label>
               
               <div className="relative group">
@@ -175,7 +211,7 @@ export default function HeroSettingsPage() {
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
                       <label className="p-4 bg-white text-slate-900 rounded-full cursor-pointer hover:scale-110 transition-all">
                         <Upload className="w-6 h-6" />
-                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'image_url')} />
                       </label>
                       <button 
                         type="button"
@@ -197,7 +233,7 @@ export default function HeroSettingsPage() {
                     </div>
                     <span className="text-sm font-bold text-foreground">Click to upload hero photo</span>
                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-black">PNG, JPG or WEBP (Max 5MB)</span>
-                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'image_url')} />
                   </label>
                 )}
               </div>
@@ -233,7 +269,7 @@ export default function HeroSettingsPage() {
               </div>
             </div>
           </div>
-        </form>
+        </div>
 
         {/* Preview Column */}
         <div className="space-y-6">
@@ -251,18 +287,27 @@ export default function HeroSettingsPage() {
             </div>
 
             {/* Hero Mockup Content */}
-            <div className="flex-1 flex flex-col p-10 space-y-6 justify-center">
-               <span className="inline-block px-3 py-1 rounded-full bg-secondary/50 text-primary text-[8px] font-black tracking-widest uppercase self-start">
+            <div className="flex-1 flex flex-col p-10 space-y-6 justify-center relative overflow-hidden">
+               {/* Background Texture Preview */}
+               {config.bg_image_url && (
+                 <img 
+                   src={config.bg_image_url} 
+                   className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" 
+                   alt="BG Preview" 
+                 />
+               )}
+
+               <span className="relative z-10 inline-block px-3 py-1 rounded-full bg-secondary/50 text-primary text-[8px] font-black tracking-widest uppercase self-start">
                 {config.badge_text || 'Badge Text'}
               </span>
               <h2 
-                className="text-3xl font-light tracking-tighter leading-none"
+                className="relative z-10 text-3xl font-light tracking-tighter leading-none"
                 dangerouslySetInnerHTML={{ __html: config.title.replace(/\n/g, '<br/>') || 'Your Title Here' }}
               />
-              <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">
+              <p className="relative z-10 text-xs text-muted-foreground leading-relaxed max-w-[200px]">
                 {config.subtitle || 'Your subtitle description will appear here...'}
               </p>
-              <div className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-6 py-3 text-[8px] font-black tracking-widest uppercase self-start">
+              <div className="relative z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-6 py-3 text-[8px] font-black tracking-widest uppercase self-start">
                 {config.button_text || 'Button'}
               </div>
             </div>

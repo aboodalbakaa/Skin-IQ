@@ -57,6 +57,19 @@ export default function StorefrontClient({
             className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 animate-mesh"
             style={{ transform: `translateY(${scrollY * 0.2}px)` }}
           />
+
+          {/* Admin Managed Background Image Overlay (NEW) */}
+          {heroConfig.bg_image_url && (
+            <div 
+              className="absolute inset-0 opacity-[0.15] dark:opacity-[0.25] transition-opacity duration-1000"
+              style={{ 
+                backgroundImage: `url(${heroConfig.bg_image_url})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                transform: `translateY(${scrollY * 0.1}px) scale(${1 + scrollY * 0.0001})`
+              }}
+            />
+          )}
           
           {/* Floating Logo Marks */}
           <div 
