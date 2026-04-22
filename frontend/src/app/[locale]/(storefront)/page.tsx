@@ -35,6 +35,21 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
     .eq('is_active', true)
     .order('sort_order', { ascending: true });
 
+  const { data: heroData } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'hero_config')
+    .single();
+
+  const heroConfig = heroData?.value || {
+    title: "Refining <br />\n<span class=\"italic font-serif\">Self-Care</span> <br />\nIntelligence",
+    subtitle: "Discover a curated sanctuary of high-performance skincare and holistic wellness, powered by advanced skin intelligence.",
+    image_url: "/hero-skincare.png",
+    button_text: t('shop'),
+    button_link: "/#store",
+    badge_text: "SkinIQ Boutique"
+  };
+
   // Extract real categories from products
   const allCategories = (products || [])
     .map(p => p.category)
@@ -51,22 +66,21 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
         <div className="flex-1 px-6 sm:px-12 lg:px-24 py-12 lg:py-0 flex flex-col justify-center max-w-4xl z-10">
           <div className="space-y-6">
             <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-primary text-[10px] font-bold tracking-widest uppercase">
-              SkinIQ Boutique
+              {heroConfig.badge_text}
             </span>
-            <h1 className="text-5xl sm:text-7xl font-light tracking-tight text-foreground leading-[1.1]">
-              Refining <br />
-              <span className="italic font-serif">Self-Care</span> <br />
-              Intelligence
-            </h1>
+            <h1 
+              className="text-5xl sm:text-7xl font-light tracking-tight text-foreground leading-[1.1]"
+              dangerouslySetInnerHTML={{ __html: (heroConfig.title || '').replace(/\n/g, '<br />') }}
+            />
             <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
-              Discover a curated sanctuary of high-performance skincare and holistic wellness, powered by advanced skin intelligence.
+              {heroConfig.subtitle}
             </p>
             <div className="pt-8">
               <Link
                 className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:opacity-90 px-10 py-5 text-sm font-bold tracking-widest uppercase transition-all shadow-xl shadow-primary/20"
-                href="/#store"
+                href={heroConfig.button_link || "/#store"}
               >
-                {t('shop')}
+                {heroConfig.button_text || t('shop')}
               </Link>
             </div>
           </div>
@@ -75,7 +89,7 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
         {/* Right Aspect: Lifestyle Imagery */}
         <div className="flex-1 w-full lg:h-full relative overflow-hidden">
           <img 
-            src="/hero-skincare.png" 
+            src={heroConfig.image_url || "/hero-skincare.png"} 
             alt="SkinIQ Luxury Skincare" 
             className="w-full h-full object-cover lg:object-center grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
           />

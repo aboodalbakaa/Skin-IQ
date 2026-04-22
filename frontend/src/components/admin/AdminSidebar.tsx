@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link, usePathname } from '@/i18n/routing';
 import { 
   Home, Users, Package, FileText, ShoppingBag, 
-  Ticket, Globe, Menu, X, ChevronRight, LogOut, Flame
+  Ticket, Globe, Menu, X, ChevronRight, LogOut, Flame, Image
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -27,6 +27,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
     { href: '/admin/users', label: t('wholesale_approvals'), icon: Users, adminOnly: true },
     { href: '/admin/promo-codes', label: 'Promo Codes', icon: Ticket, adminOnly: true },
     { href: '/admin/reports', label: t('reports'), icon: FileText, adminOnly: true },
+    { href: '/admin/settings/hero', label: 'Hero Manager', icon: Image, adminOnly: true },
   ];
 
   const filteredItems = menuItems.filter(item => !item.adminOnly || isFullAdmin);
