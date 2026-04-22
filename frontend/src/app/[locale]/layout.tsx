@@ -4,6 +4,7 @@ import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
 import { Outfit } from 'next/font/google';
 import "../globals.css";
+import { Toaster } from 'sonner';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -47,6 +48,7 @@ export default async function LocaleLayout({
           <div className="flex-1">
             {children}
           </div>
+          <Toaster richColors position="top-right" />
         </NextIntlClientProvider>
       </body>
     </html>
