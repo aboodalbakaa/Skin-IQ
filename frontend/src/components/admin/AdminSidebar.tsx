@@ -67,7 +67,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
           </Link>
           <button 
             onClick={() => setIsOpen(false)}
-            className="sm:hidden p-2 text-white/50 hover:text-white"
+            className="sm:hidden p-2 text-primary-foreground/50 hover:text-primary-foreground"
           >
             <X className="w-6 h-6" />
           </button>
@@ -87,12 +87,12 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
                 className={`
                   flex items-center justify-between group px-5 py-4 rounded-2xl text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300
                   ${isActive 
-                    ? 'bg-white/10 text-white shadow-lg border border-white/10' 
-                    : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'}
+                    ? 'bg-primary-foreground/10 text-primary-foreground shadow-lg border border-primary-foreground/10' 
+                    : 'text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/5 border border-transparent'}
                 `}
               >
                 <div className="flex items-center gap-4">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-accent' : 'text-white/30 group-hover:text-white/60'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-accent' : 'text-primary-foreground/30 group-hover:text-primary-foreground/60'}`} />
                   <span>{item.label}</span>
                 </div>
                 <ChevronRight className={`w-3 h-3 transition-transform duration-300 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 group-hover:opacity-40 group-hover:translate-x-0'}`} />
