@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { updateHeroConfig } from './actions';
-import { Save, Image as ImageIcon, Layout, Type, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { updateHeroConfig, uploadHeroImage } from './actions';
+import { Save, Image as ImageIcon, Layout, Type, Link as LinkIcon, Sparkles, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function HeroSettingsPage() {
@@ -17,6 +17,7 @@ export default function HeroSettingsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     async function loadConfig() {
@@ -34,6 +35,29 @@ export default function HeroSettingsPage() {
     }
     loadConfig();
   }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await uploadHeroImage(formData);
+      if (res.success && res.url) {
+        setConfig(prev => ({ ...prev, image_url: res.url }));
+        toast.success("Image uploaded successfully!");
+      } else {
+        toast.error("Upload failed: " + res.error);
+      }
+    } catch (err) {
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +102,7 @@ export default function HeroSettingsPage() {
         </div>
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || uploading}
           className="flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:opacity-90 transition-all disabled:opacity-50 shadow-xl shadow-primary/20"
         >
           {saving ? <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full" /> : <Save className="w-4 h-4" />}
@@ -137,19 +161,46 @@ export default function HeroSettingsPage() {
               />
             </div>
 
-            {/* Image URL */}
+            {/* Hero Image Upload */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                 <ImageIcon className="w-3 h-3 text-primary" />
-                Hero Image URL
+                Hero Image
               </label>
-              <input
-                type="text"
-                value={config.image_url}
-                onChange={(e) => setConfig({ ...config, image_url: e.target.value })}
-                placeholder="/hero-skincare.png or full URL"
-                className="w-full px-6 py-4 rounded-2xl bg-muted/50 border border-border focus:border-primary transition-all text-sm font-bold"
-              />
+              
+              <div className="relative group">
+                {config.image_url ? (
+                  <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border group-hover:border-primary/50 transition-all">
+                    <img src={config.image_url} alt="Hero" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
+                      <label className="p-4 bg-white text-slate-900 rounded-full cursor-pointer hover:scale-110 transition-all">
+                        <Upload className="w-6 h-6" />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                      </label>
+                      <button 
+                        type="button"
+                        onClick={() => setConfig({ ...config, image_url: '' })}
+                        className="p-4 bg-white text-red-500 rounded-full hover:scale-110 transition-all"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full aspect-video rounded-3xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/30 hover:border-primary/50 transition-all cursor-pointer group">
+                    <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl group-hover:scale-110 transition-all mb-4">
+                      {uploading ? (
+                        <div className="w-8 h-8 border-4 border-primary border-t-transparent animate-spin rounded-full" />
+                      ) : (
+                        <Upload className="w-8 h-8 text-primary" />
+                      )}
+                    </div>
+                    <span className="text-sm font-bold text-foreground">Click to upload hero photo</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-black">PNG, JPG or WEBP (Max 5MB)</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                  </label>
+                )}
+              </div>
             </div>
 
             {/* CTA Button */}

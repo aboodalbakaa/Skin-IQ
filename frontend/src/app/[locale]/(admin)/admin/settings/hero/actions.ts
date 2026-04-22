@@ -36,3 +36,31 @@ export async function updateHeroConfig(config: any) {
   revalidatePath('/', 'layout');
   return { success: true };
 }
+
+export async function uploadHeroImage(formData: FormData) {
+  const supabase = await createClient();
+  const file = formData.get('file') as File;
+  if (!file) throw new Error("No file provided");
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const fileExt = file.name.split('.').pop();
+  const fileName = `hero_${Date.now()}.${fileExt}`;
+  const filePath = `hero/${fileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from('site-assets')
+    .upload(filePath, file);
+
+  if (uploadError) {
+    console.error('Upload error:', uploadError);
+    return { success: false, error: uploadError.message };
+  }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('site-assets')
+    .getPublicUrl(filePath);
+
+  return { success: true, url: publicUrl };
+}
