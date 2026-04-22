@@ -24,6 +24,7 @@ export default async function PromoCodesPage() {
       ...promo,
       usageCount: associatedOrders.length,
       revenue: associatedOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0),
+      partnerProfit: associatedOrders.reduce((sum, o) => sum + ((Number(o.total_amount) || 0) * (Number(promo.commission_rate) || 0) / 100), 0),
       orders: associatedOrders
     };
   });
@@ -94,6 +95,21 @@ export default async function PromoCodesPage() {
                 </div>
               </div>
 
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Commission Rate (%)</label>
+                <div className="relative">
+                   <input 
+                    name="commission"
+                    type="number" 
+                    min="0"
+                    max="100"
+                    placeholder="10"
+                    className="w-full px-5 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all placeholder:text-slate-400"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground italic mt-1">Percent of revenue to share with partner.</p>
+              </div>
+
               <button 
                 type="submit"
                 className="w-full py-5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl font-bold uppercase tracking-[0.2em] text-xs hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/10"
@@ -115,6 +131,7 @@ export default async function PromoCodesPage() {
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Discount</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Usage</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Revenue</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Partner Profit</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Status</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 text-right">Actions</th>
                 </tr>
@@ -154,6 +171,12 @@ export default async function PromoCodesPage() {
                       </span>
                     </td>
                     <td className="px-8 py-6">
+                      <span className="px-3 py-1 bg-accent/10 text-accent rounded-lg font-black text-sm">
+                        {promo.partnerProfit.toLocaleString()} <span className="text-[10px] opacity-60">IQD</span>
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-1 font-bold">@{promo.commission_rate}% rate</p>
+                    </td>
+                    <td className="px-8 py-6">
                       {promo.is_active ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-widest">
                           Active
@@ -166,7 +189,7 @@ export default async function PromoCodesPage() {
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex justify-end items-center gap-2">
-                        <PromoCodeDetails code={promo.code} orders={promo.orders} />
+                        <PromoCodeDetails code={promo.code} orders={promo.orders} commissionRate={promo.commission_rate} />
                         <form action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
                           <button 
                             type="submit"
@@ -228,18 +251,18 @@ export default async function PromoCodesPage() {
 
                 <div className="grid grid-cols-2 gap-4 border-y border-border py-4">
                    <div className="space-y-1 border-r border-border">
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Usage</p>
-                     <p className="text-xl font-black text-slate-900 dark:text-white">{promo.usageCount}</p>
-                   </div>
-                   <div className="space-y-1 pl-4">
                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Revenue</p>
                      <p className="text-xl font-black text-emerald-500">{promo.revenue.toLocaleString()} <span className="text-[8px]">IQD</span></p>
+                   </div>
+                   <div className="space-y-1 pl-4">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Partner Profit</p>
+                     <p className="text-xl font-black text-accent">{promo.partnerProfit.toLocaleString()} <span className="text-[8px]">IQD</span></p>
                    </div>
                 </div>
 
                 <div className="flex gap-3">
                   <div className="flex-1">
-                    <PromoCodeDetails code={promo.code} orders={promo.orders} />
+                    <PromoCodeDetails code={promo.code} orders={promo.orders} commissionRate={promo.commission_rate} />
                   </div>
                   <form className="flex-1" action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
                     <button 

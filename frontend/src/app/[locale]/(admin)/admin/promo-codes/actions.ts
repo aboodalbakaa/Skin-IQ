@@ -8,6 +8,7 @@ export async function createPromoCode(formData: FormData) {
   const code = formData.get('code') as string;
   const discount = Number(formData.get('discount'));
 
+  const commission = Number(formData.get('commission') || 0);
   const discount_type = formData.get('discount_type') as string;
 
   const { error } = await supabase
@@ -16,6 +17,7 @@ export async function createPromoCode(formData: FormData) {
       code: code.toUpperCase(),
       discount_type: discount_type,
       discount_value: discount,
+      commission_rate: commission,
       is_active: true
     });
 
