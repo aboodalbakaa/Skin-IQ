@@ -83,8 +83,8 @@ export default function StorefrontClient({
         </div>
 
         {/* Centered Cinematic Content */}
-        <div className="relative z-10 px-6 sm:px-12 flex flex-col items-center max-w-7xl">
-          <div className="space-y-12" style={{ transform: `translateY(${scrollY * 0.12}px)` }}>
+        <div className="relative z-10 px-6 sm:px-12 flex flex-col items-center max-w-7xl pb-32">
+          <div className="space-y-12" style={{ transform: `translateY(${scrollY * -0.05}px)` }}>
             <div className="overflow-hidden">
               <span className="inline-block px-6 py-2 rounded-full bg-secondary/80 backdrop-blur-md text-primary text-[10px] font-black tracking-[0.4em] uppercase animate-text-reveal shadow-lg">
                 {heroConfig.badge_text}
