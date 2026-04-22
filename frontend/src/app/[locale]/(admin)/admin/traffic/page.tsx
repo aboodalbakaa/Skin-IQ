@@ -5,12 +5,12 @@ export default async function TrafficInsights() {
   const supabase = await createClient();
 
   // 1. Fetch Summary Data
-  const { data: totalVisits } = await supabase
+  const { count: totalVisits } = await supabase
     .from('page_views')
     .select('*', { count: 'exact', head: true });
 
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data: recentVisits } = await supabase
+  const { count: recentVisits } = await supabase
     .from('page_views')
     .select('*', { count: 'exact', head: true })
     .gte('created_at', twentyFourHoursAgo);
@@ -66,7 +66,7 @@ export default async function TrafficInsights() {
             <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-500/5 px-3 py-1 rounded-full">All Time</span>
           </div>
           <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
-            {(totalVisits as any || 0).toLocaleString()}
+            {(totalVisits || 0).toLocaleString()}
           </p>
           <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Total Page Views</p>
         </div>
@@ -79,7 +79,7 @@ export default async function TrafficInsights() {
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/5 px-3 py-1 rounded-full">Active</span>
           </div>
           <p className="text-4xl font-black text-slate-900 dark:text-white mb-1">
-            {(recentVisits as any || 0).toLocaleString()}
+            {(recentVisits || 0).toLocaleString()}
           </p>
           <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Views (Last 24h)</p>
         </div>
