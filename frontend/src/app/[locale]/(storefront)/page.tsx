@@ -42,13 +42,16 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
     .single();
 
   const heroConfig = heroData?.value || {
-    title: "Refining <br />\n<span class=\"italic font-serif\">Self-Care</span> <br />\nIntelligence",
-    subtitle: "Discover a curated sanctuary of high-performance skincare and holistic wellness, powered by advanced skin intelligence.",
+    title: "Discover <br /> The Intelligence <br /> <span class=\"italic font-serif text-accent\">Of Your Skin</span>",
+    subtitle: "Experience a curated sanctuary where high-performance formulas meet advanced skin intelligence for your unique journey.",
     image_url: "/hero-skincare.png",
     button_text: t('shop'),
     button_link: "/#store",
-    badge_text: "SkinIQ Boutique"
+    badge_text: "The New Standard"
   };
+
+  // Split title for staggered reveal if it's not HTML or just handle it as a block
+  const titleLines = (heroConfig.title || '').split('<br />');
 
   // Extract real categories from products
   const allCategories = (products || [])
@@ -60,34 +63,68 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
     <div className="min-h-screen bg-background overflow-x-hidden">
       
       {/* Premium Hero Section */}
-      <section className="relative w-full min-h-[90vh] flex flex-col lg:flex-row items-stretch justify-between">
+      <section className="relative w-full min-h-[95vh] flex flex-col lg:flex-row items-stretch justify-between overflow-hidden">
         
+        {/* Dynamic Background Elements */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 animate-mesh" />
+          
+          {/* Floating Logo Marks */}
+          <div className="absolute top-[20%] left-[10%] opacity-[0.03] dark:opacity-[0.07] animate-float-logo">
+             <h1 className="text-[20rem] font-black tracking-tighter">IQ</h1>
+          </div>
+          <div className="absolute bottom-[10%] right-[30%] opacity-[0.02] dark:opacity-[0.05] animate-float-logo" style={{ animationDelay: '-4s' }}>
+             <h1 className="text-[15rem] font-black tracking-tighter italic text-accent">SKIN</h1>
+          </div>
+
+          {/* Animated Gradients */}
+          <div className="absolute top-1/4 -right-20 w-[500px] h-[500px] bg-accent/10 blur-[120px] rounded-full animate-pulse" />
+          <div className="absolute -bottom-20 -left-20 w-[500px] h-[500px] bg-secondary/20 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }} />
+        </div>
+
         {/* Left Aspect: Content */}
         <div className="flex-1 px-6 sm:px-12 lg:px-24 pt-32 pb-12 lg:py-0 flex flex-col justify-center max-w-4xl z-10">
-          <div className="space-y-6">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-primary text-[10px] font-bold tracking-widest uppercase">
-              {heroConfig.badge_text}
-            </span>
-            <h1 
-              className="text-5xl sm:text-7xl font-light tracking-tight text-foreground leading-[1.1]"
-              dangerouslySetInnerHTML={{ __html: (heroConfig.title || '').replace(/\n/g, '<br />') }}
-            />
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-md">
-              {heroConfig.subtitle}
-            </p>
-            <div className="pt-8">
-              <Link
-                className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground hover:opacity-90 px-10 py-5 text-sm font-bold tracking-widest uppercase transition-all shadow-xl shadow-primary/20"
-                href={heroConfig.button_link || "/#store"}
-              >
-                {heroConfig.button_text || t('shop')}
-              </Link>
+          <div className="space-y-8">
+            <div className="overflow-hidden">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-primary text-[10px] font-black tracking-[0.3em] uppercase animate-text-reveal">
+                {heroConfig.badge_text}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {titleLines.map((line: string, i: number) => (
+                <div key={i} className="overflow-hidden">
+                  <h1 
+                    className="text-6xl sm:text-8xl font-light tracking-tighter text-foreground leading-[0.95] animate-text-reveal uppercase"
+                    style={{ animationDelay: `${0.2 + (i * 0.1)}s` }}
+                    dangerouslySetInnerHTML={{ __html: line }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="overflow-hidden">
+              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-md animate-text-reveal" style={{ animationDelay: '0.5s' }}>
+                {heroConfig.subtitle}
+              </p>
+            </div>
+
+            <div className="pt-8 overflow-hidden">
+              <div className="animate-text-reveal" style={{ animationDelay: '0.6s' }}>
+                <Link
+                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground px-12 py-6 text-sm font-black tracking-[0.2em] uppercase transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-primary/20"
+                  href={heroConfig.button_link || "/#store"}
+                >
+                  <span className="relative z-10">{heroConfig.button_text || t('shop')}</span>
+                  <div className="absolute inset-0 bg-accent translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right Aspect: Lifestyle Imagery */}
-        <div className="flex-1 w-full relative overflow-hidden min-h-[60vh] lg:min-h-0">
+        <div className="flex-1 w-full relative overflow-hidden min-h-[60vh] lg:min-h-0 z-10">
           <img 
             src={heroConfig.image_url || "/hero-skincare.png"} 
             alt="SkinIQ Luxury Skincare" 
