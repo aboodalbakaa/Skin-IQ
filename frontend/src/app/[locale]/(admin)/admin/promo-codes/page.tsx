@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { Ticket, Plus, Trash2, Power, PowerOff } from 'lucide-react';
 import { createPromoCode, togglePromoStatus, deletePromoCode } from './actions';
 import { revalidatePath } from 'next/cache';
+import { PromoCodeDetails } from '@/components/admin/PromoCodeStats';
 
 export default async function PromoCodesPage() {
   const supabase = await createClient();
@@ -9,6 +10,23 @@ export default async function PromoCodesPage() {
     .from('promo_codes')
     .select('*')
     .order('created_at', { ascending: false });
+
+  // Fetch usage stats from orders
+  const { data: orders } = await supabase
+    .from('orders')
+    .select('promo_code, total_amount, id, created_at, contact_name')
+    .not('promo_code', 'is', null);
+
+  // Aggregate stats
+  const promoStats = (promoCodes || []).map(promo => {
+    const associatedOrders = (orders || []).filter(o => o.promo_code?.toUpperCase() === promo.code?.toUpperCase());
+    return {
+      ...promo,
+      usageCount: associatedOrders.length,
+      revenue: associatedOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0),
+      orders: associatedOrders
+    };
+  });
 
   return (
     <div className="space-y-10">
@@ -95,12 +113,14 @@ export default async function PromoCodesPage() {
                 <tr className="border-b border-border">
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Promo Code</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Discount</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Usage</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Revenue</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Status</th>
                   <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {promoCodes?.map((promo) => (
+                {promoStats?.map((promo) => (
                   <tr key={promo.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 border-b border-border last:border-0 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
@@ -124,6 +144,16 @@ export default async function PromoCodesPage() {
                       </span>
                     </td>
                     <td className="px-8 py-6">
+                      <span className="text-lg font-black text-slate-900 dark:text-white">
+                        {promo.usageCount} <span className="text-[10px] font-bold text-slate-400">Orders</span>
+                      </span>
+                    </td>
+                    <td className="px-8 py-6">
+                      <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                        {promo.revenue.toLocaleString()} <span className="text-[10px] font-bold opacity-60">IQD</span>
+                      </span>
+                    </td>
+                    <td className="px-8 py-6">
                       {promo.is_active ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-widest">
                           Active
@@ -136,6 +166,7 @@ export default async function PromoCodesPage() {
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex justify-end items-center gap-2">
+                        <PromoCodeDetails code={promo.code} orders={promo.orders} />
                         <form action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
                           <button 
                             type="submit"
@@ -168,7 +199,7 @@ export default async function PromoCodesPage() {
 
           {/* Mobile Card View */}
           <div className="sm:hidden space-y-4">
-            {promoCodes?.map((promo) => (
+            {promoStats?.map((promo) => (
               <div key={promo.id} className="glass p-6 rounded-3xl border border-border flex flex-col gap-6">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
@@ -195,20 +226,21 @@ export default async function PromoCodesPage() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between border-y border-border py-4">
-                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Total Discount</span>
-                   <span className="text-2xl font-black text-accent">
-                    {promo.discount_type === 'percentage' ? (
-                      <>{promo.discount_value}%</>
-                    ) : (
-                      <>
-                        {promo.discount_value.toLocaleString()} <span className="text-xs uppercase tracking-widest text-slate-400">IQD</span>
-                      </>
-                    )}
-                   </span>
+                <div className="grid grid-cols-2 gap-4 border-y border-border py-4">
+                   <div className="space-y-1 border-r border-border">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Usage</p>
+                     <p className="text-xl font-black text-slate-900 dark:text-white">{promo.usageCount}</p>
+                   </div>
+                   <div className="space-y-1 pl-4">
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Revenue</p>
+                     <p className="text-xl font-black text-emerald-500">{promo.revenue.toLocaleString()} <span className="text-[8px]">IQD</span></p>
+                   </div>
                 </div>
 
                 <div className="flex gap-3">
+                  <div className="flex-1">
+                    <PromoCodeDetails code={promo.code} orders={promo.orders} />
+                  </div>
                   <form className="flex-1" action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
                     <button 
                       type="submit"
