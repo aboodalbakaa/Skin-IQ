@@ -41,7 +41,22 @@ export default function BundleOffersCarousel({ offers, locale = 'en' }: BundleOf
     const el = scrollRef.current;
     if (el) {
       el.addEventListener('scroll', checkScroll, { passive: true });
-      return () => el.removeEventListener('scroll', checkScroll);
+      
+      // Auto-scroll logic
+      const interval = setInterval(() => {
+        if (!el) return;
+        const isAtEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 10;
+        if (isAtEnd) {
+          el.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'smooth' });
+        }
+      }, 5000);
+
+      return () => {
+        el.removeEventListener('scroll', checkScroll);
+        clearInterval(interval);
+      };
     }
   }, []);
 

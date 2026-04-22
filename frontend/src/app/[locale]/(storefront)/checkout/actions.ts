@@ -59,12 +59,18 @@ export async function submitSpotOrder({
   }
 
   // 2. Create Order Items
-  const orderItemsData = items.map(item => ({
-    order_id: order.id,
-    product_id: item.id,
-    quantity: item.quantity,
-    unit_price: item.price
-  }));
+  const orderItemsData = items.map(item => {
+    const isBundle = item.id.startsWith('bundle-');
+    const actualId = isBundle ? item.id.replace('bundle-', '') : item.id;
+    
+    return {
+      order_id: order.id,
+      product_id: isBundle ? null : actualId,
+      bundle_offer_id: isBundle ? actualId : null,
+      quantity: item.quantity,
+      unit_price: item.price
+    };
+  });
 
   const { error: itemsError } = await supabase
     .from('order_items')

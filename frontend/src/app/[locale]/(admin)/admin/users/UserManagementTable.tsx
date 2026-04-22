@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { User, Search, Shield, MoreHorizontal, CheckCircle } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 import { updateUserRole } from './actions';
 
 interface AppUser {
@@ -13,15 +14,21 @@ interface AppUser {
   created_at: string;
 }
 
-export default function UserManagementTable({ initialUsers }: { initialUsers: AppUser[] }) {
+export default function UserManagementTable({ initialUsers, filter }: { initialUsers: AppUser[], filter?: string }) {
   const [search, setSearch] = useState('');
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const filteredUsers = initialUsers.filter(u => 
-    u.full_name?.toLowerCase().includes(search.toLowerCase()) || 
-    u.email?.toLowerCase().includes(search.toLowerCase()) ||
-    u.business_name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = initialUsers.filter(u => {
+    const matchesSearch = u.full_name?.toLowerCase().includes(search.toLowerCase()) || 
+      u.email?.toLowerCase().includes(search.toLowerCase()) ||
+      u.business_name?.toLowerCase().includes(search.toLowerCase());
+    
+    if (filter === 'pending') {
+      return matchesSearch && u.role === 'CUSTOMER' && u.business_name !== null;
+    }
+    
+    return matchesSearch;
+  });
 
   const roles = ['CUSTOMER', 'WHOLESALE', 'MANAGER', 'ADMIN', 'SUPER_ADMIN'];
 
@@ -38,16 +45,28 @@ export default function UserManagementTable({ initialUsers }: { initialUsers: Ap
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input 
-          type="text" 
-          placeholder="Search partners by name, email or business..." 
-          className="w-full pl-11 pr-4 py-3 bg-white dark:bg-[#0D1518] border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium placeholder:text-slate-400"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input 
+            type="text" 
+            placeholder="Search partners by name, email or business..." 
+            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-[#0D1518] border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium placeholder:text-slate-400"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        {filter === 'pending' && (
+          <div className="flex items-center gap-3 px-6 py-3 bg-primary/10 border border-primary/20 rounded-2xl animate-in fade-in slide-in-from-right-4 duration-500">
+             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+             <span className="text-xs font-black text-primary uppercase tracking-widest">Showing Pending Only</span>
+             <Link href="/admin/users" className="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-[0.2em] ml-2 border-l border-primary/20 pl-4">
+               Clear Filter
+             </Link>
+          </div>
+        )}
       </div>
 
       {/* Modern User Table */}

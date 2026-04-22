@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link, usePathname } from '@/i18n/routing';
 import { 
   Home, Users, Package, FileText, ShoppingBag, 
-  Ticket, Globe, Menu, X, ChevronRight, LogOut 
+  Ticket, Globe, Menu, X, ChevronRight, LogOut, Flame
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -22,6 +22,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
   const menuItems = [
     { href: '/admin', label: t('dashboard'), icon: Home, adminOnly: false },
     { href: '/admin/products', label: t('products_manage'), icon: ShoppingBag, adminOnly: false },
+    { href: '/admin/bundle-offers', label: 'Urgent Offers', icon: Flame, adminOnly: false },
     { href: '/admin/orders', label: t('orders'), icon: Package, adminOnly: true },
     { href: '/admin/users', label: t('wholesale_approvals'), icon: Users, adminOnly: true },
     { href: '/admin/promo-codes', label: 'Promo Codes', icon: Ticket, adminOnly: true },

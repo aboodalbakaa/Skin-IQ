@@ -1,7 +1,12 @@
 import { createClient } from '@/utils/supabase/server';
 import UserManagementTable from './UserManagementTable';
 
-export default async function UserManagementPage() {
+export default async function UserManagementPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ filter?: string }> 
+}) {
+  const { filter } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -39,7 +44,7 @@ export default async function UserManagementPage() {
         </div>
       </div>
 
-      <UserManagementTable initialUsers={users || []} />
+      <UserManagementTable initialUsers={users || []} filter={filter} />
     </div>
   );
 }
