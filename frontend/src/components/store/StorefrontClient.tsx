@@ -32,7 +32,7 @@ export default function StorefrontClient({
   const heroConfig = heroData?.value || {
     title: "Elevate <br /> Your Daily <br /> <span class=\"italic font-serif text-accent\">Skin Ritual</span>",
     subtitle: "Step into a world of curated excellence where pure ingredients meet high-performance results for a glow that's uniquely yours.",
-    image_url: "/hero-skincare.png",
+    bg_image_url: "/hero-skincare.png",
     button_text: "Shop the Collection",
     button_link: "/#store",
     badge_text: "Boutique Experience"
@@ -48,8 +48,8 @@ export default function StorefrontClient({
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       
-      {/* Premium Hero Section */}
-      <section className="relative w-full min-h-[95vh] flex flex-col lg:flex-row items-stretch justify-between overflow-hidden">
+      {/* Premium Hero Section - Full Width Centered Cinematic Experience */}
+      <section className="relative w-full min-h-[95vh] flex flex-col items-center justify-center text-center overflow-hidden">
         
         {/* Dynamic Background Elements with Parallax */}
         <div className="absolute inset-0 pointer-events-none z-0">
@@ -58,54 +58,58 @@ export default function StorefrontClient({
             style={{ transform: `translateY(${scrollY * 0.2}px)` }}
           />
 
-          {/* Admin Managed Background Image Overlay (NEW) */}
+          {/* Admin Managed Background Image Overlay (Main Visual Anchor) */}
           {heroConfig.bg_image_url && (
             <div 
-              className="absolute inset-0 opacity-[0.15] dark:opacity-[0.25] transition-opacity duration-1000"
+              className="absolute inset-0 opacity-[0.35] dark:opacity-[0.45] transition-opacity duration-1000 grayscale-[0.3]"
               style={{ 
                 backgroundImage: `url(${heroConfig.bg_image_url})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                transform: `translateY(${scrollY * 0.1}px) scale(${1 + scrollY * 0.0001})`
+                transform: `translateY(${scrollY * 0.08}px) scale(${1.05 + scrollY * 0.0001})`
               }}
             />
           )}
+
+          {/* Depth Overlays for Content Legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/40 to-background z-[1]" />
+          <div className="absolute inset-0 bg-black/5 z-[1]" />
           
-          {/* Floating Logo Marks */}
+          {/* Floating Logo Marks for Brand Identity */}
           <div 
-            className="absolute top-[20%] left-[10%] opacity-[0.03] dark:opacity-[0.07] animate-float-logo"
-            style={{ transform: `translateY(${scrollY * -0.1}px)` }}
+            className="absolute top-[10%] left-[5%] opacity-[0.03] dark:opacity-[0.07] animate-float-logo pointer-events-none"
+            style={{ transform: `translateY(${scrollY * -0.15}px)` }}
           >
-             <h1 className="text-[15rem] sm:text-[20rem] font-black tracking-tighter">IQ</h1>
+             <h1 className="text-[12rem] sm:text-[25rem] font-black tracking-tighter">IQ</h1>
           </div>
           <div 
-            className="absolute bottom-[10%] right-[30%] opacity-[0.02] dark:opacity-[0.05] animate-float-logo" 
-            style={{ animationDelay: '-4s', transform: `translateY(${scrollY * 0.15}px)` }}
+            className="absolute bottom-[10%] right-[5%] opacity-[0.02] dark:opacity-[0.05] animate-float-logo pointer-events-none" 
+            style={{ animationDelay: '-4s', transform: `translateY(${scrollY * 0.2}px)` }}
           >
-             <h1 className="text-[10rem] sm:text-[15rem] font-black tracking-tighter italic text-accent">SKIN</h1>
+             <h1 className="text-[10rem] sm:text-[18rem] font-black tracking-tighter italic text-accent">SKIN</h1>
           </div>
 
-          {/* Animated Gradients */}
+          {/* Atmospheric Ambient Light */}
           <div 
-            className="absolute top-1/4 -right-20 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-accent/10 blur-[120px] rounded-full animate-pulse"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[1000px] h-[600px] sm:h-[1000px] bg-accent/10 blur-[180px] rounded-full animate-pulse pointer-events-none"
             style={{ transform: `translateY(${scrollY * -0.05}px)` }}
           />
         </div>
 
-        {/* Left Aspect: Content */}
-        <div className="flex-1 px-6 sm:px-12 lg:px-24 pt-32 pb-12 lg:py-0 flex flex-col justify-center max-w-4xl z-10">
-          <div className="space-y-8" style={{ transform: `translateY(${scrollY * 0.1}px)` }}>
+        {/* Centered Cinematic Content */}
+        <div className="relative z-10 px-6 sm:px-12 flex flex-col items-center max-w-7xl">
+          <div className="space-y-12" style={{ transform: `translateY(${scrollY * 0.12}px)` }}>
             <div className="overflow-hidden">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-secondary text-primary text-[10px] font-black tracking-[0.3em] uppercase animate-text-reveal">
+              <span className="inline-block px-6 py-2 rounded-full bg-secondary/80 backdrop-blur-md text-primary text-[10px] font-black tracking-[0.4em] uppercase animate-text-reveal shadow-lg">
                 {heroConfig.badge_text}
               </span>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               {titleLines.map((line: string, i: number) => (
                 <div key={i} className="overflow-hidden">
                   <h1 
-                    className="text-5xl sm:text-7xl lg:text-8xl font-light tracking-tight text-foreground leading-[0.95] animate-text-reveal uppercase pr-4"
+                    className="text-6xl sm:text-8xl lg:text-[11rem] font-light tracking-tight text-foreground leading-[0.8] animate-text-reveal uppercase px-4"
                     style={{ animationDelay: `${0.2 + (i * 0.1)}s` }}
                     dangerouslySetInnerHTML={{ __html: line }}
                   />
@@ -113,16 +117,16 @@ export default function StorefrontClient({
               ))}
             </div>
 
-            <div className="overflow-hidden">
-              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-md animate-text-reveal" style={{ animationDelay: '0.5s' }}>
+            <div className="overflow-hidden flex justify-center px-4">
+              <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-3xl animate-text-reveal font-medium" style={{ animationDelay: '0.6s' }}>
                 {heroConfig.subtitle}
               </p>
             </div>
 
-            <div className="pt-8 overflow-hidden">
-              <div className="animate-text-reveal" style={{ animationDelay: '0.6s' }}>
+            <div className="pt-12 overflow-hidden flex justify-center">
+              <div className="animate-text-reveal" style={{ animationDelay: '0.7s' }}>
                 <Link
-                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground px-10 sm:px-12 py-5 sm:py-6 text-[10px] sm:text-xs font-black tracking-[0.2em] uppercase transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-primary/20"
+                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground px-14 py-7 sm:px-20 sm:py-10 text-[10px] sm:text-xs font-black tracking-[0.3em] uppercase transition-all hover:scale-110 active:scale-95 shadow-[0_20px_50px_rgba(var(--primary),0.2)]"
                   href={heroConfig.button_link || "/#store"}
                 >
                   <span className="relative z-10">{heroConfig.button_text}</span>
@@ -131,18 +135,6 @@ export default function StorefrontClient({
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Right Aspect: Lifestyle Imagery */}
-        <div className="flex-1 w-full relative overflow-hidden min-h-[60vh] lg:min-h-0 z-10">
-          <img 
-            src={heroConfig.image_url || "/hero-skincare.png"} 
-            alt="SkinIQ Luxury Skincare" 
-            className="w-full h-full object-cover lg:object-center grayscale-[0.2] hover:grayscale-0 transition-all duration-1000 scale-105"
-            style={{ transform: `scale(${1.05 + scrollY * 0.0001}) translateY(${scrollY * 0.05}px)` }}
-          />
-          {/* Refined gradient overlay for text legibility - much more subtle at the bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/40 to-transparent lg:hidden" />
         </div>
 
       </section>

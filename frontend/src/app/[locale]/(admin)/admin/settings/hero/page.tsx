@@ -10,7 +10,6 @@ export default function HeroSettingsPage() {
   const [config, setConfig] = useState({
     title: '',
     subtitle: '',
-    image_url: '',
     bg_image_url: '',
     button_text: '',
     button_link: '',
@@ -37,7 +36,7 @@ export default function HeroSettingsPage() {
     loadConfig();
   }, []);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image_url' | 'bg_image_url') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -48,8 +47,8 @@ export default function HeroSettingsPage() {
     try {
       const res = await uploadHeroImage(formData);
       if (res.success && res.url) {
-        setConfig(prev => ({ ...prev, [field]: res.url }));
-        toast.success(`${field === 'image_url' ? 'Hero' : 'Background'} image uploaded!`);
+        setConfig(prev => ({ ...prev, bg_image_url: res.url }));
+        toast.success(`Background image uploaded!`);
       } else {
         toast.error("Upload failed: " + res.error);
       }
@@ -98,7 +97,7 @@ export default function HeroSettingsPage() {
             Hero <span className="italic font-serif">Manager</span>
           </h1>
           <p className="text-muted-foreground text-sm font-medium">
-            Customize the first impression your customers see on the storefront.
+            Customize the centered cinematic experience of your storefront.
           </p>
         </div>
         <button
@@ -162,60 +161,24 @@ export default function HeroSettingsPage() {
               />
             </div>
 
-            {/* Background Texture/Image */}
+            {/* Main Background Photo */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                <Sparkles className="w-3 h-3 text-primary" />
-                Text Background Overlay (Dynamic)
+                <ImageIcon className="w-3 h-3 text-primary" />
+                Main Background Image
               </label>
               <div className="relative group">
                 {config.bg_image_url ? (
-                  <div className="relative w-full h-32 rounded-3xl overflow-hidden border border-border group-hover:border-primary/50 transition-all bg-muted">
-                    <img src={config.bg_image_url} alt="BG Texture" className="w-full h-full object-cover opacity-60" />
+                  <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border group-hover:border-primary/50 transition-all bg-muted">
+                    <img src={config.bg_image_url} alt="Main Background" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
-                      <label className="p-3 bg-white text-slate-900 rounded-full cursor-pointer hover:scale-110 transition-all">
-                        <Upload className="w-4 h-4" />
-                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'bg_image_url')} />
+                      <label className="p-4 bg-white text-slate-900 rounded-full cursor-pointer hover:scale-110 transition-all">
+                        <Upload className="w-6 h-6" />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                       </label>
                       <button 
                         type="button"
                         onClick={() => setConfig({ ...config, bg_image_url: '' })}
-                        className="p-3 bg-white text-red-500 rounded-full hover:scale-110 transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 rounded-3xl border-2 border-dashed border-border bg-muted/20 hover:bg-muted/30 hover:border-primary/50 transition-all cursor-pointer group">
-                    <Upload className="w-6 h-6 text-primary mb-2 opacity-40 group-hover:opacity-100 transition-all" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Upload Text Background Photo</span>
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'bg_image_url')} />
-                  </label>
-                )}
-              </div>
-              <p className="text-[9px] text-muted-foreground italic leading-tight">This photo will appear subtly behind the hero text with a parallax flow effect.</p>
-            </div>
-
-            {/* Hero Image Upload */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                <ImageIcon className="w-3 h-3 text-primary" />
-                Hero Image (Right Side)
-              </label>
-              
-              <div className="relative group">
-                {config.image_url ? (
-                  <div className="relative w-full aspect-video rounded-3xl overflow-hidden border border-border group-hover:border-primary/50 transition-all">
-                    <img src={config.image_url} alt="Hero" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-4">
-                      <label className="p-4 bg-white text-slate-900 rounded-full cursor-pointer hover:scale-110 transition-all">
-                        <Upload className="w-6 h-6" />
-                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'image_url')} />
-                      </label>
-                      <button 
-                        type="button"
-                        onClick={() => setConfig({ ...config, image_url: '' })}
                         className="p-4 bg-white text-red-500 rounded-full hover:scale-110 transition-all"
                       >
                         <X className="w-6 h-6" />
@@ -231,12 +194,13 @@ export default function HeroSettingsPage() {
                         <Upload className="w-8 h-8 text-primary" />
                       )}
                     </div>
-                    <span className="text-sm font-bold text-foreground">Click to upload hero photo</span>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-black">PNG, JPG or WEBP (Max 5MB)</span>
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'image_url')} />
+                    <span className="text-sm font-bold text-foreground">Click to upload background photo</span>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-black">Recommended: 1920x1080 (Max 5MB)</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                   </label>
                 )}
               </div>
+              <p className="text-[10px] text-muted-foreground italic leading-tight mt-2">This photo will fill the entire hero background with a cinematic parallax effect.</p>
             </div>
 
             {/* CTA Button */}
@@ -274,11 +238,21 @@ export default function HeroSettingsPage() {
         {/* Preview Column */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground px-4">
-            Live Preview (Rough Draft)
+            Centered Preview (Rough Draft)
           </div>
-          <div className="relative aspect-[4/5] lg:aspect-auto lg:h-[600px] w-full bg-white dark:bg-slate-900 rounded-[3rem] border border-border shadow-2xl overflow-hidden flex flex-col">
+          <div className="relative aspect-[4/5] lg:aspect-auto lg:h-[600px] w-full bg-white dark:bg-slate-900 rounded-[3rem] border border-border shadow-2xl overflow-hidden flex flex-col items-center justify-center text-center p-12">
+            {/* Background Texture Preview */}
+            {config.bg_image_url && (
+              <img 
+                src={config.bg_image_url} 
+                className="absolute inset-0 w-full h-full object-cover opacity-40 pointer-events-none" 
+                alt="BG Preview" 
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/40 to-white dark:from-slate-900/20 dark:via-slate-900/40 dark:to-slate-900" />
+
             {/* Header Mockup */}
-            <div className="h-16 border-b border-border flex items-center px-8 justify-between opacity-40">
+            <div className="absolute top-0 left-0 w-full h-16 border-b border-border flex items-center px-8 justify-between opacity-40 z-20">
               <div className="font-black text-xs">SKINIQ</div>
               <div className="flex gap-4">
                 <div className="w-8 h-1 bg-slate-200 rounded" />
@@ -287,41 +261,20 @@ export default function HeroSettingsPage() {
             </div>
 
             {/* Hero Mockup Content */}
-            <div className="flex-1 flex flex-col p-10 space-y-6 justify-center relative overflow-hidden">
-               {/* Background Texture Preview */}
-               {config.bg_image_url && (
-                 <img 
-                   src={config.bg_image_url} 
-                   className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" 
-                   alt="BG Preview" 
-                 />
-               )}
-
-               <span className="relative z-10 inline-block px-3 py-1 rounded-full bg-secondary/50 text-primary text-[8px] font-black tracking-widest uppercase self-start">
+            <div className="relative z-10 flex flex-col items-center space-y-8">
+               <span className="inline-block px-3 py-1 rounded-full bg-secondary/80 backdrop-blur-sm text-primary text-[8px] font-black tracking-widest uppercase">
                 {config.badge_text || 'Badge Text'}
               </span>
               <h2 
-                className="relative z-10 text-3xl font-light tracking-tighter leading-none"
+                className="text-4xl lg:text-6xl font-light tracking-tighter leading-none uppercase"
                 dangerouslySetInnerHTML={{ __html: config.title.replace(/\n/g, '<br/>') || 'Your Title Here' }}
               />
-              <p className="relative z-10 text-xs text-muted-foreground leading-relaxed max-w-[200px]">
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
                 {config.subtitle || 'Your subtitle description will appear here...'}
               </p>
-              <div className="relative z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-6 py-3 text-[8px] font-black tracking-widest uppercase self-start">
+              <div className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-10 py-5 text-[8px] font-black tracking-widest uppercase shadow-xl">
                 {config.button_text || 'Button'}
               </div>
-            </div>
-
-            {/* Image Preview Overlay */}
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-muted border-l border-border overflow-hidden">
-              {config.image_url ? (
-                <img src={config.image_url} alt="Preview" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground opacity-20">
-                  <ImageIcon className="w-12 h-12" />
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-slate-900 to-transparent" />
             </div>
           </div>
         </div>
