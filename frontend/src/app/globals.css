@@ -103,12 +103,27 @@ button:not([class*='text-']) {
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.05);
 }
 
-/* Smooth Interactive Elements */
-.interactive-hover {
-  transition: all 0.3s ease;
+/* Global Input/Form Visibility Patch - Aggressive */
+input, select, textarea {
+  color: var(--foreground) !important;
+  background-color: var(--muted) !important;
 }
-.interactive-hover:hover {
-  transform: translateY(-2px);
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 0.7;
+}
+
+/* Force specific contrast for high-visibility areas */
+.dark input, .dark select, .dark textarea {
+  background-color: #0F172A !important; /* Deep Navy */
+  color: #FFFFFF !important;
+  border-color: #1E293B !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  background-color: var(--background) !important;
+  border-color: var(--primary) !important;
 }
 
 @keyframes slideIn {

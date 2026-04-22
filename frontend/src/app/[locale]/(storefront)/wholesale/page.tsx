@@ -120,27 +120,27 @@ export default function WholesalePortal() {
             <>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('full_name')}</label>
-                <input required name="full_name" type="text" className="px-4 py-3 rounded-xl border border-border bg-muted text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <input required name="full_name" type="text" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('business_name')}</label>
-                <input required name="business_name" type="text" className="px-4 py-3 rounded-xl border border-border bg-muted text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <input required name="business_name" type="text" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('phone_number')}</label>
-                <input required name="phone_number" type="tel" className="px-4 py-3 rounded-xl border border-border bg-muted text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <input required name="phone_number" type="tel" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
             </>
           )}
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('email')}</label>
-            <input required name="email" type="email" className="px-4 py-3 rounded-xl border border-border bg-muted text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+            <input required name="email" type="email" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('password')}</label>
-            <input required name="password" type="password" className="px-4 py-3 rounded-xl border border-border bg-muted text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+            <input required name="password" type="password" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
           </div>
 
           <button 

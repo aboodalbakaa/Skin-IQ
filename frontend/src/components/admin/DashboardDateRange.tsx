@@ -54,9 +54,9 @@ export default function DashboardDateRange() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-3 w-64 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-border rounded-[2rem] shadow-2xl overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-0 mt-3 w-64 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-border rounded-[2rem] shadow-2xl overflow-hidden z-[999] animate-in fade-in zoom-in-95 duration-200">
           <div className="p-4 border-b border-border bg-slate-50/50 dark:bg-slate-800/50">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 dark:text-slate-300">Select Timeframe</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white">Select Timeframe</span>
           </div>
           <div className="p-2">
             {RANGES.map((range) => (
@@ -66,7 +66,7 @@ export default function DashboardDateRange() {
                 className={`w-full flex items-center justify-between px-5 py-3.5 rounded-2xl text-sm font-bold transition-all ${
                   currentDays === range.value 
                     ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white'
+                    : 'text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-white'
                 }`}
               >
                 {range.label}
@@ -76,8 +76,8 @@ export default function DashboardDateRange() {
           </div>
           
           <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-border">
-            <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 text-center leading-relaxed uppercase tracking-tighter">
-              Charts and trends will automatically update based on your selection.
+            <p className="text-[9px] font-black text-slate-900 dark:text-slate-200 text-center leading-relaxed uppercase tracking-widest">
+              Live metrics will update instantly.
             </p>
           </div>
         </div>
