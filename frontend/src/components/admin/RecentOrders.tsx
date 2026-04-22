@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { ShoppingBag, ChevronRight, Clock, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Clock, CheckCircle, AlertCircle, XCircle, Truck, RotateCcw } from 'lucide-react';
 
 interface RecentOrdersProps {
   orders: any[];
@@ -10,8 +10,10 @@ interface RecentOrdersProps {
 const statusConfig: any = {
   PENDING: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-500/10' },
   PAID: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+  PENDING_DELIVERY: { icon: Truck, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+  DELIVERED: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
   DEBT: { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-500/10' },
-  CANCELLED: { icon: XCircle, color: 'text-slate-400', bg: 'bg-slate-50 dark:bg-white/5' }
+  CANCELLED: { icon: RotateCcw, color: 'text-slate-400', bg: 'bg-slate-50 dark:bg-white/5' }
 };
 
 export default function RecentOrders({ orders }: RecentOrdersProps) {
@@ -68,7 +70,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                     <td className="px-8 py-5 text-center">
                       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${status.bg} ${status.color}`}>
                         <StatusIcon className="w-3 h-3" />
-                        {order.status}
+                        {order.status.replace('_', ' ')}
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right font-black text-slate-900 dark:text-white tabular-nums">

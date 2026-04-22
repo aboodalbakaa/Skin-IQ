@@ -13,8 +13,12 @@ import {
   X, 
   ExternalLink,
   ShoppingBag,
-  Ticket
+  Ticket,
+  Truck,
+  RotateCcw
 } from 'lucide-react';
+import { updateOrderStatus } from '@/app/[locale]/(admin)/admin/orders/actions';
+import { toast } from 'sonner';
 
 interface OrderItem {
   id: string;
@@ -52,6 +56,27 @@ interface OrderManagementProps {
 export default function OrderManagement({ initialOrders }: OrderManagementProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    setUpdatingStatus(orderId);
+    try {
+      const res = await updateOrderStatus(orderId, newStatus);
+      if (res.success) {
+        toast.success(`Order status updated to ${newStatus}`);
+        // Update local state for immediate feedback
+        if (selectedOrder && selectedOrder.id === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: newStatus });
+        }
+      } else {
+        toast.error("Failed to update status: " + res.error);
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
 
   const filteredOrders = initialOrders.filter(order => {
     const name = order.app_users?.full_name || order.contact_name || '';
@@ -62,9 +87,17 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PAID': return 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-green-200';
-      case 'DEBT': return 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border-red-200';
-      default: return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200';
+      case 'PAID':
+      case 'DELIVERED': 
+        return 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-green-200';
+      case 'DEBT': 
+        return 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border-red-200';
+      case 'PENDING_DELIVERY':
+        return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200';
+      case 'CANCELLED':
+        return 'bg-slate-50 text-slate-500 dark:bg-white/5 dark:text-slate-400 border-border';
+      default: 
+        return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200';
     }
   };
 
@@ -127,10 +160,12 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(order.status)}`}>
-                        {order.status === 'PAID' ? <CheckCircle2 className="w-3 h-3" /> :
+                        {order.status === 'PAID' || order.status === 'DELIVERED' ? <CheckCircle2 className="w-3 h-3" /> :
                          order.status === 'DEBT' ? <AlertCircle className="w-3 h-3" /> :
+                         order.status === 'PENDING_DELIVERY' ? <Truck className="w-3 h-3" /> :
+                         order.status === 'CANCELLED' ? <RotateCcw className="w-3 h-3" /> :
                          <Clock className="w-3 h-3" />}
-                        {order.status}
+                        {order.status.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -227,6 +262,31 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
                       </a>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* Status Management (New) */}
+              <div className="bg-white dark:bg-slate-900/50 p-6 rounded-3xl border border-border space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase text-slate-400 tracking-[0.2em]">Update Order Status</h3>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(selectedOrder.status)}`}>
+                    Current: {selectedOrder.status}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {['PENDING', 'PAID', 'PENDING_DELIVERY', 'DELIVERED', 'DEBT', 'CANCELLED'].map((status) => (
+                    <button
+                      key={status}
+                      disabled={updatingStatus === selectedOrder.id}
+                      onClick={() => handleStatusUpdate(selectedOrder.id, status)}
+                      className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border
+                        ${selectedOrder.status === status 
+                          ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
+                          : 'bg-white dark:bg-slate-800 border-border hover:border-primary/50 text-slate-600 dark:text-slate-400'}`}
+                    >
+                      {status.replace('_', ' ')}
+                    </button>
+                  ))}
                 </div>
               </div>
 

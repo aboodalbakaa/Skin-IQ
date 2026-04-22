@@ -25,9 +25,16 @@ export async function getDashboardStats(days: number = 30) {
     const amount = Number(order.total_amount) || 0;
     const date = new Date(order.created_at);
 
-    if (order.status === 'PAID') clearedRevenue += amount;
-    if (order.status === 'PENDING') pendingRevenue += amount;
-    if (order.status === 'DEBT') outstandingDebt += amount;
+    // Filter out CANCELLED orders from all metrics
+    if (order.status === 'CANCELLED') return;
+
+    if (order.status === 'PAID' || order.status === 'DELIVERED') {
+      clearedRevenue += amount;
+    } else if (order.status === 'PENDING' || order.status === 'PENDING_DELIVERY') {
+      pendingRevenue += amount;
+    } else if (order.status === 'DEBT') {
+      outstandingDebt += amount;
+    }
 
     if (date > currentPeriodStart) {
       currentPeriodOrders++;
