@@ -54,6 +54,7 @@ interface OrderManagementProps {
 }
 
 export default function OrderManagement({ initialOrders }: OrderManagementProps) {
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
@@ -64,7 +65,9 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
       const res = await updateOrderStatus(orderId, newStatus);
       if (res.success) {
         toast.success(`Order status updated to ${newStatus}`);
-        // Update local state for immediate feedback
+        
+        // Update both the list and the selection for immediate sync
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
         if (selectedOrder && selectedOrder.id === orderId) {
           setSelectedOrder({ ...selectedOrder, status: newStatus });
         }
@@ -78,7 +81,7 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
     }
   };
 
-  const filteredOrders = initialOrders.filter(order => {
+  const filteredOrders = orders.filter(order => {
     const name = order.app_users?.full_name || order.contact_name || '';
     const phone = order.app_users?.phone_number || order.contact_phone || '';
     const query = searchQuery.toLowerCase();
