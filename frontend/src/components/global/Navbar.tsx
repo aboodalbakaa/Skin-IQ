@@ -16,9 +16,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          {/* Left section: Menu & Search */}
-          <div className="flex items-center gap-4 flex-1">
-            <GlobalSearch />
+          {/* Left section: Spacer on mobile, Menu on desktop */}
+          <div className="hidden sm:flex items-center gap-4 flex-1">
+            <div className="w-full max-w-[200px]" />
           </div>
 
           {/* Center section: Logo */}
@@ -30,13 +30,13 @@ export default function Navbar() {
 
           {/* Right section: Icons & Language */}
           <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
-            <div className="hidden lg:flex items-center gap-4 mr-6 text-[10px] font-bold tracking-[0.3em] text-muted-foreground uppercase">
+            <GlobalSearch />
+            
+            <div className="hidden lg:flex items-center gap-4 mr-2 text-[10px] font-bold tracking-[0.3em] text-muted-foreground uppercase">
               <Link href="/" locale="en" className="hover:text-primary transition-all">EN</Link>
               <div className="w-[1px] h-3 bg-border" />
               <Link href="/" locale="ar" className="hover:text-primary transition-all font-arabic text-sm">AR</Link>
             </div>
-
-
 
             <Link href="/account" className="p-2 hover:bg-muted rounded-full transition-colors" aria-label={t('account')}>
               <User className="w-5 h-5 text-foreground" />

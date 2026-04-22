@@ -96,10 +96,10 @@ export default function GlobalSearch() {
       {/* Search Trigger */}
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-3 px-4 py-2 bg-muted/50 rounded-full border border-border hover:border-primary/30 transition-all text-muted-foreground group min-w-[150px] sm:min-w-[200px]"
+        className="flex items-center justify-center sm:justify-start gap-3 p-2 sm:px-4 sm:py-2 bg-muted/50 rounded-full border border-border hover:border-primary/30 transition-all text-muted-foreground group w-10 h-10 sm:w-auto sm:h-auto sm:min-w-[200px]"
       >
-        <Search className="w-4 h-4 group-hover:text-primary transition-colors" />
-        <span className="text-[10px] font-bold uppercase tracking-widest flex-1 text-left">
+        <Search className="w-5 h-5 sm:w-4 sm:h-4 group-hover:text-primary transition-colors" />
+        <span className="hidden sm:block text-[10px] font-bold uppercase tracking-widest flex-1 text-left">
           {t?.('placeholder') || 'Search products...'}
         </span>
         <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-background px-1.5 font-mono text-[8px] font-black uppercase opacity-100">
