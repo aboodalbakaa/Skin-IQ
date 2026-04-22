@@ -2,12 +2,20 @@ import StatCards from '@/components/admin/StatCards';
 import DebtReport from '@/components/admin/DebtReport';
 import RecentOrders from '@/components/admin/RecentOrders';
 import TopProducts from '@/components/admin/TopProducts';
+import DashboardDateRange from '@/components/admin/DashboardDateRange';
 import { getDashboardStats, getDebtReportData } from './dashboard/actions';
-import { LayoutDashboard, TrendingUp, Calendar } from 'lucide-react';
+import { LayoutDashboard, TrendingUp } from 'lucide-react';
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams
+}: {
+  searchParams: Promise<{ days?: string }>
+}) {
+  const { days } = await searchParams;
+  const daysNum = parseInt(days || '30');
+
   const [statsData, debtReportData] = await Promise.all([
-    getDashboardStats(),
+    getDashboardStats(daysNum),
     getDebtReportData()
   ]);
 
@@ -29,14 +37,12 @@ export default async function AdminDashboard() {
           <p className="text-slate-400 mt-2 font-medium tracking-wide">Real-time metrics and business health insights.</p>
         </div>
 
-        <div className="flex items-center gap-4 bg-white dark:bg-white/5 p-2 rounded-2xl border border-border shadow-sm">
-          <div className="px-4 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-border flex items-center gap-3">
-             <Calendar className="w-4 h-4 text-slate-400" />
-             <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Last 30 Days</span>
-          </div>
-          <div className="px-4 py-2 flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <DashboardDateRange />
+          
+          <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
              <TrendingUp className="w-4 h-4 text-emerald-500" />
-             <span className="text-xs font-black text-emerald-500 uppercase tracking-widest">Live Data</span>
+             <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Sync</span>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 
-export async function getDashboardStats() {
+export async function getDashboardStats(days: number = 30) {
   const supabase = await createClient();
 
   // 1. Calculate Revenue & Debt by Status
@@ -11,15 +11,15 @@ export async function getDashboardStats() {
     .select('total_amount, status, created_at');
 
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-  const sixtyDaysAgo = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
+  const currentPeriodStart = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+  const previousPeriodStart = new Date(now.getTime() - (2 * days * 24 * 60 * 60 * 1000));
 
   let clearedRevenue = 0;
   let pendingRevenue = 0;
   let outstandingDebt = 0;
   
-  let currentMonthOrders = 0;
-  let previousMonthOrders = 0;
+  let currentPeriodOrders = 0;
+  let previousPeriodOrders = 0;
 
   orderStats?.forEach(order => {
     const amount = Number(order.total_amount) || 0;
@@ -29,10 +29,10 @@ export async function getDashboardStats() {
     if (order.status === 'PENDING') pendingRevenue += amount;
     if (order.status === 'DEBT') outstandingDebt += amount;
 
-    if (date > thirtyDaysAgo) {
-      currentMonthOrders++;
-    } else if (date > sixtyDaysAgo) {
-      previousMonthOrders++;
+    if (date > currentPeriodStart) {
+      currentPeriodOrders++;
+    } else if (date > previousPeriodStart) {
+      previousPeriodOrders++;
     }
   });
 
@@ -105,7 +105,7 @@ export async function getDashboardStats() {
     .slice(0, 5);
 
   // Calculate trends
-  const orderTrend = previousMonthOrders === 0 ? 0 : Math.round(((currentMonthOrders - previousMonthOrders) / previousMonthOrders) * 100);
+  const orderTrend = previousPeriodOrders === 0 ? 0 : Math.round(((currentPeriodOrders - previousPeriodOrders) / previousPeriodOrders) * 100);
 
   return {
     metrics: {
@@ -114,7 +114,7 @@ export async function getDashboardStats() {
       outstandingDebt,
       pendingWholesalers: pendingWholesalers || 0,
       orderTrend,
-      orderVolume: currentMonthOrders
+      orderVolume: currentPeriodOrders
     },
     recentOrders: formattedRecentOrders,
     topProducts
