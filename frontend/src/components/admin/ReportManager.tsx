@@ -138,7 +138,7 @@ export default function ReportManager() {
               <div className="flex gap-2">
                  <button 
                   onClick={() => handlePreview(report)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-border hover:bg-primary hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-900 border border-border hover:bg-primary hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all text-slate-900 dark:text-white shadow-sm"
                 >
                   <Eye className="w-3.5 h-3.5" /> Preview
                 </button>

@@ -23,25 +23,25 @@
   --background: #FFFDFC; /* Soft Cream/Shell */
   --foreground: #1A1F21; /* Charcoal Slate */
 
-  /* Premium SkinIQ Palette */
-  --primary: #003E52;          /* Deep Navy Teal */
+  /* Premium SkinIQ Palette - High Contrast */
+  --primary: #002D3D;          /* Deeper Navy Teal */
   --primary-foreground: #FFFFFF;
   
-  --accent: #86C1D4;           /* Soft Sky Blue */
-  --accent-foreground: #003E52;
+  --accent: #6AA9C0;           /* Darkened Sky Blue for visibility */
+  --accent-foreground: #002D3D;
   
   --secondary: #F5EBE0;        /* Soft Nude/Shell */
-  --secondary-foreground: #003E52;
+  --secondary-foreground: #002D3D;
 
   --muted: #F3F1EC;
-  --muted-foreground: #64748B;
+  --muted-foreground: #475569; /* Darkened for accessibility */
   
-  --border: #E2E8F0;
+  --border: #CBD5E1; /* High contrast border */
   --radius: 12px;
 }
 
 .dark {
-  --background: #0B0E0F; /* Matte Charcoal/Night */
+  --background: #080A0B; /* Deep Matte Night */
   --foreground: #F8F9FA;
   
   --primary: #86C1D4;
@@ -52,7 +52,7 @@
   
   --muted: #1E293B;
   --muted-foreground: #94A3B8;
-  --border: #334155;
+  --border: #1E293B; /* Subtler border in dark mode */
 }
 
 body {
@@ -63,17 +63,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism Utilities - Refined for Luxury */
+/* Glassmorphism Utilities - Enhanced Contrast */
 .glass {
-  background: rgba(255, 253, 252, 0.7);
+  background: rgba(255, 253, 252, 0.8);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 62, 82, 0.1);
 }
 
 .dark .glass {
-  background: rgba(11, 14, 15, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(8, 10, 11, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Premium Card Style */

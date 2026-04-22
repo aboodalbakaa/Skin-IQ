@@ -73,7 +73,7 @@ export default function BundleOfferForm({ offer, onClose, onSuccess }: BundleOff
               
               {/* Image Upload Area */}
               <div className="md:col-span-2">
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 mb-3">
                   Promo Image (Social Media Design)
                 </label>
                 <div className="relative group aspect-[16/9] rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-primary transition-all overflow-hidden bg-slate-50 dark:bg-slate-900/50">
@@ -101,31 +101,31 @@ export default function BundleOfferForm({ offer, onClose, onSuccess }: BundleOff
 
               {/* Titles */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Title (English)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Title (English)</label>
                 <input name="title_en" defaultValue={offer?.title_en || ''} required className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Eucerin Special Offer" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">العنوان (عربي)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">العنوان (عربي)</label>
                 <input name="title_ar" defaultValue={offer?.title_ar || ''} required className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-right" dir="rtl" placeholder="عرض خاص من يوسرين" />
               </div>
 
               {/* Descriptions */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Description (English)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Description (English)</label>
                 <textarea name="description_en" defaultValue={offer?.description_en || ''} className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm h-24 focus:outline-none" placeholder="Bundle includes 4 essential products..." />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">الوصف (عربي)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">الوصف (عربي)</label>
                 <textarea name="description_ar" defaultValue={offer?.description_ar || ''} className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm h-24 focus:outline-none text-right" dir="rtl" placeholder="العرض يشمل 4 منتجات أساسية..." />
               </div>
 
               {/* Pricing */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Bundle Price (IQD)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Bundle Price (IQD)</label>
                 <input type="number" name="bundle_price" defaultValue={offer?.bundle_price || ''} required className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="93000" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Original Price (IQD)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Original Price (IQD)</label>
                 <input type="number" name="original_price" defaultValue={offer?.original_price || ''} required className="w-full px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm" placeholder="110000" />
               </div>
 
@@ -136,11 +136,11 @@ export default function BundleOfferForm({ offer, onClose, onSuccess }: BundleOff
                     <input type="checkbox" name="is_active" value="true" defaultChecked={offer ? offer.is_active : true} className="sr-only peer" />
                     <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </div>
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Visible on Website</span>
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-500 uppercase tracking-widest">Visible on Website</span>
                 </label>
                 
                 <div className="flex items-center gap-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Sort Order</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Sort Order</label>
                   <input type="number" name="sort_order" defaultValue={offer?.sort_order || 0} className="w-20 px-3 py-1.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg text-sm" />
                 </div>
               </div>

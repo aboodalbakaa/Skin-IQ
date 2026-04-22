@@ -38,7 +38,7 @@ export default async function PromoCodesPage() {
               className="space-y-5"
             >
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Code String</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Code String</label>
                   <input 
                     required
                     name="code"
@@ -50,7 +50,7 @@ export default async function PromoCodesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Discount Type</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Discount Type</label>
                   <select
                     name="discount_type"
                     required
@@ -62,7 +62,7 @@ export default async function PromoCodesPage() {
                 </div>
                 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Value</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Value</label>
                   <div className="relative">
                      <input 
                       required
@@ -93,10 +93,10 @@ export default async function PromoCodesPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Promo Code</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Discount</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Promo Code</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Discount</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Status</th>
+                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
