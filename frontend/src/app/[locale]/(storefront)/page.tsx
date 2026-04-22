@@ -2,6 +2,8 @@ import {getTranslations, setRequestLocale} from 'next-intl/server';
 import { createClient } from '@/utils/supabase/server';
 import StorefrontClient from '@/components/store/StorefrontClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home({params}: {params: Promise<{locale: string}>}) {
   const { locale } = await params;
   setRequestLocale(locale);
