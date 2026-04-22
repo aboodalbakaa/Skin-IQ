@@ -5,6 +5,7 @@ import {routing} from '@/i18n/routing';
 import { Outfit } from 'next/font/google';
 import "../globals.css";
 import { Toaster } from 'sonner';
+import { Analytics } from "@vercel/analytics/react";
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -49,6 +50,7 @@ export default async function LocaleLayout({
             {children}
           </div>
           <Toaster richColors position="top-right" />
+          <Analytics />
         </NextIntlClientProvider>
       </body>
     </html>
