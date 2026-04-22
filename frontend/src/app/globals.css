@@ -23,36 +23,36 @@
   --background: #FFFDFC; /* Soft Cream/Shell */
   --foreground: #1A1F21; /* Charcoal Slate */
 
-  /* Premium SkinIQ Palette - High Contrast */
-  --primary: #002D3D;          /* Deeper Navy Teal */
+  /* Premium SkinIQ Palette - Ultimate Contrast */
+  --primary: #002D3D;          /* Deepest Navy Teal */
   --primary-foreground: #FFFFFF;
   
-  --accent: #6AA9C0;           /* Darkened Sky Blue for visibility */
-  --accent-foreground: #002D3D;
+  --accent: #5097AB;           /* Vibrant, readable Sky Blue */
+  --accent-foreground: #FFFFFF;
   
-  --secondary: #F5EBE0;        /* Soft Nude/Shell */
+  --secondary: #EADBC8;        /* Richer Nude/Shell */
   --secondary-foreground: #002D3D;
 
-  --muted: #F3F1EC;
-  --muted-foreground: #475569; /* Darkened for accessibility */
+  --muted: #F1F5F9;
+  --muted-foreground: #334155; /* High Contrast Slate */
   
-  --border: #CBD5E1; /* High contrast border */
+  --border: #CBD5E1; 
   --radius: 12px;
 }
 
 .dark {
-  --background: #080A0B; /* Deep Matte Night */
-  --foreground: #F8F9FA;
+  --background: #050708; /* Pure Night */
+  --foreground: #FFFFFF; /* Maximum Brightness */
   
   --primary: #86C1D4;
   --primary-foreground: #001F29;
   
-  --accent: #003E52;
+  --accent: #004D66;           /* Saturated Deep Blue */
   --accent-foreground: #FFFFFF;
   
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
-  --border: #1E293B; /* Subtler border in dark mode */
+  --muted: #0F172A;
+  --muted-foreground: #CBD5E1; /* High Visibility Grey */
+  --border: #1E293B;
 }
 
 body {
@@ -63,17 +63,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism Utilities - Enhanced Contrast */
+/* Global Meta Text Fix */
+.text-meta {
+  color: #475569; /* slate-600 */
+}
+
+.dark .text-meta {
+  color: #94A3B8; /* slate-400 (visible on dark) */
+}
+
+/* Glassmorphism Utilities - High Definition */
 .glass {
-  background: rgba(255, 253, 252, 0.8);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 62, 82, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(0, 45, 61, 0.15);
 }
 
 .dark .glass {
-  background: rgba(8, 10, 11, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(5, 7, 8, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Force High Contrast for all Buttons unless overridden */
+button:not([class*='text-']) {
+  color: inherit;
 }
 
 /* Premium Card Style */
