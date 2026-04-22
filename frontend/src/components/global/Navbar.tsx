@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { ShoppingBag, User, Heart, Search } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import GlobalSearch from './GlobalSearch';
 
 export default function Navbar() {
   const t = useTranslations('Navbar');
@@ -17,15 +18,7 @@ export default function Navbar() {
           
           {/* Left section: Menu & Search */}
           <div className="flex items-center gap-4 flex-1">
-
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-muted rounded-full border border-border max-w-[200px]">
-              <Search className="w-4 h-4 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder={t('search')}
-                className="bg-transparent border-none text-xs focus:outline-none w-full text-foreground"
-              />
-            </div>
+            <GlobalSearch />
           </div>
 
           {/* Center section: Logo */}
