@@ -107,7 +107,9 @@ export default async function PromoCodesPage() {
                         <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
                           <Ticket className="w-4 h-4" />
                         </div>
-                        <span className="font-bold tracking-widest text-slate-900 dark:text-slate-100 uppercase">{promo.code}</span>
+                        <span className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl font-black tracking-widest text-primary dark:text-white uppercase border border-slate-200 dark:border-slate-700 shadow-sm">
+                          {promo.code}
+                        </span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
@@ -174,8 +176,10 @@ export default async function PromoCodesPage() {
                       <Ticket className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold tracking-[0.2em] text-slate-900 dark:text-white uppercase">{promo.code}</h3>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">
+                      <h3 className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-xl font-black tracking-[0.2em] text-primary dark:text-white uppercase border border-slate-200 dark:border-slate-700 text-xs shadow-sm">
+                        {promo.code}
+                      </h3>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-2">
                         {promo.discount_type === 'percentage' ? 'Percentage Discount' : 'Fixed Amount'}
                       </p>
                     </div>
