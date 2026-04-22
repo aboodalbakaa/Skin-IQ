@@ -11,10 +11,23 @@ export default async function PromoCodesPage() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  // Fetch usage stats from orders
+  // Fetch usage stats from orders with user details
   const { data: orders } = await supabase
     .from('orders')
-    .select('promo_code, total_amount, id, created_at, contact_name')
+    .select(`
+      promo_code, 
+      total_amount, 
+      id, 
+      created_at, 
+      contact_name,
+      contact_phone,
+      status,
+      app_users (
+        full_name,
+        phone_number,
+        business_name
+      )
+    `)
     .not('promo_code', 'is', null);
 
   // Aggregate stats

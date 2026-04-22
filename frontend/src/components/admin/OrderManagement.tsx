@@ -51,12 +51,13 @@ interface Order {
 
 interface OrderManagementProps {
   initialOrders: Order[];
+  initialQuery?: string;
 }
 
-export default function OrderManagement({ initialOrders }: OrderManagementProps) {
+export default function OrderManagement({ initialOrders, initialQuery = '' }: OrderManagementProps) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   // Keep local state in sync with server data when it revalidates
@@ -89,8 +90,12 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
   const filteredOrders = orders.filter(order => {
     const name = order.app_users?.full_name || order.contact_name || '';
     const phone = order.app_users?.phone_number || order.contact_phone || '';
+    const promo = order.promo_code || '';
     const query = searchQuery.toLowerCase();
-    return name.toLowerCase().includes(query) || phone.toLowerCase().includes(query) || order.id.includes(query);
+    return name.toLowerCase().includes(query) || 
+           phone.toLowerCase().includes(query) || 
+           order.id.includes(query) ||
+           promo.toLowerCase().includes(query);
   });
 
   const getStatusColor = (status: string) => {

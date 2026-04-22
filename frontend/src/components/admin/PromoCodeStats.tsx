@@ -8,12 +8,19 @@ interface Order {
   id: string;
   created_at: string;
   total_amount: number;
-  contact_name: string;
+  contact_name: string | null;
+  contact_phone: string | null;
+  status: string;
+  app_users: {
+    full_name: string | null;
+    phone_number: string | null;
+    business_name: string | null;
+  } | null;
 }
 
 interface PromoCodeStatsProps {
   code: string;
-  orders: Order[];
+  orders: any[]; // Use any to avoid strict type issues with Supabase nesting for now
   commissionRate: number;
 }
 
@@ -21,6 +28,22 @@ export function PromoCodeDetails({ code, orders, commissionRate }: PromoCodeStat
   const [isOpen, setIsOpen] = useState(false);
   const totalRevenue = orders.reduce((s, o) => s + Number(o.total_amount), 0);
   const totalProfit = (totalRevenue * (commissionRate || 0)) / 100;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PAID':
+      case 'DELIVERED': 
+        return 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 border-green-200';
+      case 'DEBT': 
+        return 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 border-red-200';
+      case 'PENDING_DELIVERY':
+        return 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-blue-200';
+      case 'CANCELLED':
+        return 'bg-slate-50 text-slate-500 dark:bg-white/5 dark:text-slate-400 border-border';
+      default: 
+        return 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200';
+    }
+  };
 
   if (orders.length === 0) {
     return (
@@ -97,44 +120,62 @@ export function PromoCodeDetails({ code, orders, commissionRate }: PromoCodeStat
               <div className="space-y-4">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 px-4">Order History</h3>
                 <div className="space-y-3">
-                  {orders.map((order) => (
-                    <div 
-                      key={order.id}
-                      className="group p-5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-border transition-all flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-border flex items-center justify-center text-slate-400">
-                          <CreditCard className="w-5 h-5" />
+                  {orders.map((order) => {
+                    const user = Array.isArray(order.app_users) ? order.app_users[0] : order.app_users;
+                    const name = user?.full_name || order.contact_name || 'Guest Customer';
+                    const phone = user?.phone_number || order.contact_phone;
+                    const business = user?.business_name;
+                    
+                    return (
+                      <div 
+                        key={order.id}
+                        className="group p-5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-transparent hover:border-border transition-all flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-5">
+                          <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 border border-border flex items-center justify-center text-slate-400">
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <User className="w-3 h-3 text-slate-400" />
+                              <span className="text-sm font-bold text-slate-900 dark:text-white">{name}</span>
+                              {business && <span className="text-[10px] text-accent font-black uppercase tracking-widest ml-2">{business}</span>}
+                            </div>
+                            <div className="flex items-center gap-4 mt-1">
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="w-3 h-3 text-slate-400" />
+                                <span className="text-[10px] font-medium text-slate-500">
+                                  {new Date(order.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {phone && (
+                                <div className="flex items-center gap-1.5">
+                                  <Phone className="w-3 h-3 text-slate-400" />
+                                  <span className="text-[10px] font-medium text-slate-500">{phone}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <User className="w-3 h-3 text-slate-400" />
-                            <span className="text-sm font-bold text-slate-900 dark:text-white">{order.contact_name || 'Guest Customer'}</span>
+                        <div className="flex items-center gap-6">
+                          <div className="flex flex-col items-end gap-2">
+                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-bold uppercase border ${getStatusColor(order.status)}`}>
+                                {order.status.replace('_', ' ')}
+                              </span>
+                            <p className="text-lg font-black text-slate-900 dark:text-white">
+                              {Number(order.total_amount).toLocaleString()} <span className="text-[10px]">IQD</span>
+                            </p>
                           </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Calendar className="w-3 h-3 text-slate-400" />
-                            <span className="text-[10px] font-medium text-slate-500">
-                              {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
+                          <Link 
+                            href={`/admin/orders?query=${order.id}`}
+                            className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-border hover:border-accent hover:text-accent transition-all"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Amount</p>
-                          <p className="text-lg font-black text-slate-900 dark:text-white">
-                            {Number(order.total_amount).toLocaleString()} <span className="text-[10px]">IQD</span>
-                          </p>
-                        </div>
-                        <Link 
-                          href={`/admin/orders/${order.id}`}
-                          className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-border hover:border-accent hover:text-accent transition-all"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
