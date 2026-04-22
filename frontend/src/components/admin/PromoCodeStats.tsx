@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Eye, X, ExternalLink, Calendar, User, CreditCard } from 'lucide-react';
+import { Eye, X, ExternalLink, Calendar, User, CreditCard, Phone } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 
 interface Order {
