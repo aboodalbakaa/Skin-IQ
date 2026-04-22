@@ -26,6 +26,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
     { href: '/admin/orders', label: t('orders'), icon: Package, adminOnly: true },
     { href: '/admin/users', label: t('wholesale_approvals'), icon: Users, adminOnly: true },
     { href: '/admin/promo-codes', label: 'Promo Codes', icon: Ticket, adminOnly: true },
+    { href: '/admin/traffic', label: 'Traffic Insights', icon: Globe, adminOnly: true },
     { href: '/admin/reports', label: t('reports'), icon: FileText, adminOnly: true },
     { href: '/admin/settings/hero', label: 'Hero Manager', icon: Image, adminOnly: true },
   ];

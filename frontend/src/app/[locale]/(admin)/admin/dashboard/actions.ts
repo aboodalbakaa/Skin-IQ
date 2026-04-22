@@ -111,8 +111,21 @@ export async function getDashboardStats(days: number = 30) {
     .sort((a, b) => b.totalSold - a.totalSold)
     .slice(0, 5);
 
+  // 5. Traffic Metrics
+  const { count: currentViews } = await supabase
+    .from('page_views')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', currentPeriodStart.toISOString());
+
+  const { count: previousViews } = await supabase
+    .from('page_views')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', previousPeriodStart.toISOString())
+    .lt('created_at', currentPeriodStart.toISOString());
+
   // Calculate trends
   const orderTrend = previousPeriodOrders === 0 ? 0 : Math.round(((currentPeriodOrders - previousPeriodOrders) / previousPeriodOrders) * 100);
+  const trafficTrend = (previousViews || 0) === 0 ? 0 : Math.round((((currentViews || 0) - (previousViews || 0)) / (previousViews || 1)) * 100);
 
   return {
     metrics: {
@@ -121,7 +134,9 @@ export async function getDashboardStats(days: number = 30) {
       outstandingDebt,
       pendingWholesalers: pendingWholesalers || 0,
       orderTrend,
-      orderVolume: currentPeriodOrders
+      orderVolume: currentPeriodOrders,
+      trafficVolume: currentViews || 0,
+      trafficTrend
     },
     recentOrders: formattedRecentOrders,
     topProducts

@@ -9,8 +9,12 @@ interface StatCardsProps {
     pendingWholesalers: number;
     orderTrend: number;
     orderVolume: number;
+    trafficVolume: number;
+    trafficTrend: number;
   }
 }
+
+import { Globe } from 'lucide-react';
 
 export default function StatCards({ stats }: StatCardsProps) {
   const formatCurrency = (val: number) => {
@@ -18,7 +22,7 @@ export default function StatCards({ stats }: StatCardsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-10">
       
       {/* Monthly Revenue (Cleared) */}
       <div className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover">
@@ -51,6 +55,23 @@ export default function StatCards({ stats }: StatCardsProps) {
            {stats.orderVolume} active orders
         </div>
       </div>
+
+      {/* Site Traffic Card */}
+      <Link href="/admin/traffic" className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover group">
+        <div className="flex justify-between items-start mb-4">
+          <div className="p-3 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-2xl group-hover:bg-blue-500 group-hover:text-white transition-all">
+            <Globe className="w-6 h-6" />
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Site Traffic</p>
+            <h3 className="text-2xl font-black mt-1 text-slate-900 dark:text-white tabular-nums">{stats.trafficVolume.toLocaleString()}</h3>
+          </div>
+        </div>
+        <div className={`flex items-center gap-2 mt-4 text-[10px] font-bold uppercase tracking-widest ${stats.trafficTrend >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+           {stats.trafficTrend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+           {Math.abs(stats.trafficTrend)}% Growth
+        </div>
+      </Link>
 
       {/* Outstanding Debt */}
       <div className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover">
