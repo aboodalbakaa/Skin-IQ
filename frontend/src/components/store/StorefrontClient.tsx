@@ -75,20 +75,6 @@ export default function StorefrontClient({
           <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/40 to-background z-[1]" />
           <div className="absolute inset-0 bg-black/5 z-[1]" />
           
-          {/* Floating Logo Marks for Brand Identity */}
-          <div 
-            className="absolute top-[10%] left-[5%] opacity-[0.03] dark:opacity-[0.07] animate-float-logo pointer-events-none"
-            style={{ transform: `translateY(${scrollY * -0.15}px)` }}
-          >
-             <h1 className="text-[12rem] sm:text-[25rem] font-black tracking-tighter">IQ</h1>
-          </div>
-          <div 
-            className="absolute bottom-[10%] right-[5%] opacity-[0.02] dark:opacity-[0.05] animate-float-logo pointer-events-none" 
-            style={{ animationDelay: '-4s', transform: `translateY(${scrollY * 0.2}px)` }}
-          >
-             <h1 className="text-[10rem] sm:text-[18rem] font-black tracking-tighter italic text-accent">SKIN</h1>
-          </div>
-
           {/* Atmospheric Ambient Light */}
           <div 
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[1000px] h-[600px] sm:h-[1000px] bg-accent/10 blur-[180px] rounded-full animate-pulse pointer-events-none"
