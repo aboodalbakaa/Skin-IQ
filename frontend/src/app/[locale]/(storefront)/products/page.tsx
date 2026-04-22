@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import ProductGrid from '@/components/store/ProductGrid';
+import FilterableProductGrid from '@/components/store/FilterableProductGrid';
 import { Sparkles } from 'lucide-react';
 
 export default async function ProductsPage({
@@ -18,12 +18,18 @@ export default async function ProductsPage({
     .select('*')
     .eq('is_active', true);
 
+  // Extract real categories
+  const allCategories = (products || [])
+    .map(p => p.category)
+    .filter((cat): cat is string => !!cat && cat.trim() !== '');
+  const uniqueCategories = [...new Set(allCategories)];
+
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="mb-16 text-center space-y-4">
+        <div className="mb-8 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary text-primary text-[10px] font-black uppercase tracking-[0.3em]">
             <Sparkles className="w-4 h-4" />
             Full Collection
@@ -36,10 +42,8 @@ export default async function ProductsPage({
           </p>
         </div>
 
-        {/* Catalog */}
-        <div className="pt-8">
-           <ProductGrid products={products || []} />
-        </div>
+        {/* Category Filters + Products */}
+        <FilterableProductGrid products={products || []} categories={uniqueCategories} />
 
       </div>
 

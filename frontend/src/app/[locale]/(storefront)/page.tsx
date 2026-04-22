@@ -1,8 +1,6 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {Link} from '@/i18n/routing';
-import ProductGrid from '@/components/store/ProductGrid';
-import ProductShowcase from '@/components/store/ProductShowcase';
-import CategoryLuxe from '@/components/store/CategoryLuxe';
+import FilterableShowcase from '@/components/store/FilterableShowcase';
 import BundleOffersCarousel from '@/components/store/BundleOffersCarousel';
 import { createClient } from '@/utils/supabase/server';
 import { ArrowRight } from 'lucide-react';
@@ -17,13 +15,19 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
     .from('products')
     .select('*')
     .eq('is_active', true)
-    .limit(8);
+    .limit(20);
 
   const { data: bundleOffers } = await supabase
     .from('bundle_offers')
     .select('*')
     .eq('is_active', true)
     .order('sort_order', { ascending: true });
+
+  // Extract real categories from products
+  const allCategories = (products || [])
+    .map(p => p.category)
+    .filter((cat): cat is string => !!cat && cat.trim() !== '');
+  const uniqueCategories = [...new Set(allCategories)];
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -69,11 +73,6 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
 
       </section>
 
-      {/* Luxury Category Selection */}
-      <section className="bg-white/50 dark:bg-transparent -mt-8 relative z-20">
-        <CategoryLuxe />
-      </section>
-
       {/* 🔥 Bundle Offers Carousel */}
       {bundleOffers && bundleOffers.length > 0 && (
         <section className="relative w-full py-16 sm:py-20 overflow-hidden bg-gradient-to-b from-red-50/40 via-white/60 to-white dark:from-red-950/10 dark:via-transparent dark:to-transparent">
@@ -87,7 +86,7 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
         </section>
       )}
 
-      {/* Dynamic Product Showcase Section */}
+      {/* Dynamic Product Showcase Section with Category Filter */}
       <section className="relative w-full py-24 overflow-hidden bg-white/30 dark:bg-transparent">
         
         {/* Background Ambient Flow - Luxe Gold Accents */}
@@ -97,7 +96,7 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16 px-6 sm:px-12 lg:px-24 gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-8 px-6 sm:px-12 lg:px-24 gap-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">
                 <span className="w-12 h-[1px] bg-current" />
@@ -119,7 +118,7 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
             </Link>
           </div>
 
-          <ProductShowcase products={products || []} />
+          <FilterableShowcase products={products || []} categories={uniqueCategories} />
         </div>
       </section>
 
