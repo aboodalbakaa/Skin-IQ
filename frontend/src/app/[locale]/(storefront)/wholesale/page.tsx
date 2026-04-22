@@ -40,7 +40,23 @@ export default function WholesalePortal() {
       if (error) {
         setErrorMsg(error.message);
       } else {
-        router.push('/admin'); // Re-evaluate their role inside /admin layout
+        // Fetch role to decide where to send them
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: userData } = await supabase
+            .from('app_users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          if (userData?.role === 'WHOLESALE') {
+            router.push('/');
+          } else if (['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes(userData?.role || '')) {
+            router.push('/admin');
+          } else {
+            router.push('/');
+          }
+        }
         router.refresh();
       }
     } else {
@@ -65,7 +81,7 @@ export default function WholesalePortal() {
         setErrorMsg(error.message);
       } else if (data.session) {
         // If confirmation is OFF, we get a session immediately
-        router.push('/admin');
+        router.push('/');
         router.refresh();
       } else {
         setSuccessMsg(t('registration_complete') || "Account created successfully. You can now log in.");
@@ -120,27 +136,27 @@ export default function WholesalePortal() {
             <>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('full_name')}</label>
-                <input required name="full_name" type="text" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <input required name="full_name" type="text" className="px-4 py-3 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('business_name')}</label>
-                <input required name="business_name" type="text" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <input required name="business_name" type="text" className="px-4 py-3 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('phone_number')}</label>
-                <input required name="phone_number" type="tel" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                <input required name="phone_number" type="tel" className="px-4 py-3 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
               </div>
             </>
           )}
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('email')}</label>
-            <input required name="email" type="email" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+            <input required name="email" type="email" className="px-4 py-3 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('password')}</label>
-            <input required name="password" type="password" className="px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+            <input required name="password" type="password" className="px-4 py-3 rounded-xl border border-border bg-muted/50 text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
           </div>
 
           <button 

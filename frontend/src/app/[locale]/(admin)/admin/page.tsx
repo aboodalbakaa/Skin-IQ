@@ -38,7 +38,7 @@ export default async function AdminDashboard({
         </div>
 
         <div className="flex items-center gap-4">
-          <DashboardDateRange />
+          <DashboardDateRange currentDays={daysNum.toString()} />
           
           <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
              <TrendingUp className="w-4 h-4 text-emerald-500" />

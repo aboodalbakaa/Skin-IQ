@@ -20,9 +20,10 @@ interface Product {
 
 interface ProductShowcaseProps {
   products: Product[];
+  userRole?: string;
 }
 
-export default function ProductShowcase({ products }: ProductShowcaseProps) {
+export default function ProductShowcase({ products, userRole }: ProductShowcaseProps) {
   const t = useTranslations('Products');
   const tCommon = useTranslations('Common');
   const addItem = useCartStore((state) => state.addItem);
@@ -30,6 +31,8 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
+
+  const isWholesale = userRole === 'WHOLESALE';
 
   // Entrance animation logic
   useEffect(() => {
@@ -97,92 +100,109 @@ export default function ProductShowcase({ products }: ProductShowcaseProps) {
         className="grid grid-cols-2 gap-3 lg:flex lg:gap-6 overflow-x-auto pb-12 px-4 sm:px-12 lg:px-24 lg:snap-x lg:snap-mandatory scrollbar-hide no-scrollbar scroll-smooth"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {products.map((product, index) => (
-          <div 
-            key={product.id}
-            className={`w-full lg:flex-shrink-0 lg:w-[280px] sm:w-[320px] lg:snap-center transition-all duration-1000 ease-out transform
-              ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}
-            `}
-            style={{ transitionDelay: `${index * 150}ms` }}
-          >
-            <div className="group relative bg-white dark:bg-slate-900 border border-border shadow-sm rounded-3xl lg:rounded-[2.5rem] p-3 lg:p-4 h-full flex flex-col transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-              
-              {/* Image & Hotspots */}
-              <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6">
-                 {/* Badge */}
-                 {product.badge && (
-                  <div className="absolute top-4 left-4 z-10 px-4 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
-                    {product.badge}
-                  </div>
-                )}
-                
-                <img 
-                  src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
-                  alt={product.name}
-                  className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
-                />
+        {products.map((product, index) => {
+          const finalPrice = isWholesale 
+            ? (product.discount_wholesale_price || product.wholesale_price) 
+            : (product.discount_retail_price || product.retail_price);
+          
+          const originalPrice = isWholesale ? product.wholesale_price : product.retail_price;
+          const hasDiscount = isWholesale ? !!product.discount_wholesale_price : !!product.discount_retail_price;
 
-                {/* Out of Stock Overlay */}
-                {product.is_out_of_stock && (
-                  <div className="absolute inset-0 flex items-center justify-center z-20">
-                    <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
-                      Sold Out
-                    </span>
-                  </div>
-                )}
+          return (
+            <div 
+              key={product.id}
+              className={`w-full lg:flex-shrink-0 lg:w-[280px] sm:w-[320px] lg:snap-center transition-all duration-1000 ease-out transform
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}
+              `}
+              style={{ transitionDelay: `${index * 150}ms` }}
+            >
+              <div className="group relative bg-white dark:bg-slate-900 border border-border shadow-sm rounded-3xl lg:rounded-[2.5rem] p-3 lg:p-4 h-full flex flex-col transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+                
+                {/* Image & Hotspots */}
+                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6">
+                   {/* Badge */}
+                   {(product.badge || isWholesale) && (
+                    <div className={`absolute top-4 left-4 z-10 px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
+                      isWholesale ? 'bg-primary text-white' : 'bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white'
+                    }`}>
+                      {isWholesale ? 'Wholesale Partner' : product.badge}
+                    </div>
+                  )}
+                  
+                  <img 
+                    src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
+                    alt={product.name}
+                    className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
+                  />
 
-                {/* Quick Action Overlay */}
-                {!product.is_out_of_stock && (
-                  <div className="absolute inset-x-2 lg:inset-x-4 bottom-2 lg:bottom-4 translate-y-0 lg:translate-y-20 lg:group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
-                    <button 
-                      onClick={() => addItem({ ...product, price: product.discount_retail_price || product.retail_price, quantity: 1 })}
-                      className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 shadow-2xl"
-                    >
-                      <ShoppingBag className="w-4 h-4" />
-                      Quick Add
-                    </button>
+                  {/* Out of Stock Overlay */}
+                  {product.is_out_of_stock && (
+                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                      <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
+                        Sold Out
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Quick Action Overlay */}
+                  {!product.is_out_of_stock && (
+                    <div className="absolute inset-x-2 lg:inset-x-4 bottom-2 lg:bottom-4 translate-y-0 lg:translate-y-20 lg:group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
+                      <button 
+                        onClick={() => addItem({ ...product, price: finalPrice, quantity: 1 })}
+                        className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 shadow-2xl"
+                      >
+                        <ShoppingBag className="w-4 h-4" />
+                        Quick Add
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Visual Polish */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                  
+                  {/* Always-visible product title on image */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
+                    <h3 className="text-sm sm:text-base font-black text-white leading-tight line-clamp-2 drop-shadow-lg">
+                      {product.name}
+                    </h3>
                   </div>
-                )}
-                
-                {/* Visual Polish */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                
-                {/* Always-visible product title on image */}
-                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
-                  <h3 className="text-sm sm:text-base font-black text-white leading-tight line-clamp-2 drop-shadow-lg">
+                </div>
+
+                {/* Info */}
+                <Link href={`/products/${product.id}`} className="flex-1 px-2 space-y-2 cursor-pointer">
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
+                  </div>
+                  <h3 className="text-sm lg:text-lg font-black text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                     {product.name}
                   </h3>
-                </div>
+                  <div className="flex justify-between items-end pt-2">
+                    <div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em] block mb-1">
+                        {isWholesale ? 'Wholesale Price' : 'Retail Price'}
+                      </span>
+                      <span className="text-xl font-black text-primary flex items-baseline gap-2 tabular-nums">
+                        {finalPrice.toLocaleString()} <span className="text-xs">IQD</span>
+                        {isWholesale ? (
+                          <span className="text-[10px] font-bold text-slate-400 line-through">
+                            Retail: {product.retail_price.toLocaleString()}
+                          </span>
+                        ) : product.discount_retail_price && (
+                          <span className="text-sm font-medium text-slate-400 line-through">
+                            {product.retail_price.toLocaleString()}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-300 group-hover:border-primary group-hover:text-primary transition-colors">
+                      <ArrowRight className="w-5 h-5" />
+                    </div>
+                  </div>
+                </Link>
               </div>
-
-              {/* Info */}
-              <Link href={`/products/${product.id}`} className="flex-1 px-2 space-y-2 cursor-pointer">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
-                </div>
-                <h3 className="text-sm lg:text-lg font-black text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                  {product.name}
-                </h3>
-                <div className="flex justify-between items-end pt-2">
-                  <div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em] block mb-1">Retail Price</span>
-                    <span className="text-xl font-black text-primary flex items-baseline gap-2 tabular-nums">
-                      {(product.discount_retail_price || product.retail_price).toLocaleString()} <span className="text-xs">IQD</span>
-                      {product.discount_retail_price && (
-                        <span className="text-sm font-medium text-slate-400 line-through">
-                          {product.retail_price.toLocaleString()}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-300 group-hover:border-primary group-hover:text-primary transition-colors">
-                    <ArrowRight className="w-5 h-5" />
-                  </div>
-                </div>
-              </Link>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Closing "View More" Slide */}
         <div className="w-full lg:flex-shrink-0 lg:w-[200px] flex items-center justify-center lg:snap-center col-span-2 lg:col-span-1 mt-4 lg:mt-0">

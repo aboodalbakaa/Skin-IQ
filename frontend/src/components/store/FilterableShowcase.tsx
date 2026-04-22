@@ -20,9 +20,10 @@ interface Product {
 interface FilterableShowcaseProps {
   products: Product[];
   categories: string[];
+  userRole?: string;
 }
 
-export default function FilterableShowcase({ products, categories }: FilterableShowcaseProps) {
+export default function FilterableShowcase({ products, categories, userRole }: FilterableShowcaseProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const filtered = activeCategory
@@ -32,7 +33,7 @@ export default function FilterableShowcase({ products, categories }: FilterableS
   return (
     <>
       <CategoryFilter categories={categories} onFilter={setActiveCategory} />
-      <ProductShowcase products={filtered} />
+      <ProductShowcase products={filtered} userRole={userRole} />
     </>
   );
 }

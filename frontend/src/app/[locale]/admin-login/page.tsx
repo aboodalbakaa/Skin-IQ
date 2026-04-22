@@ -24,10 +24,18 @@ export default function AdminLogin() {
     
     async function checkAuth() {
       if (supabase) {
-        const { data } = await supabase.auth.getUser();
-        if (data.user) {
-          router.push('/admin');
-          router.refresh();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: userData } = await supabase
+            .from('app_users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          if (userData && ['ADMIN', 'SUPER_ADMIN', 'MANAGER'].includes(userData.role)) {
+            router.push('/admin');
+            router.refresh();
+          }
         }
       }
     }

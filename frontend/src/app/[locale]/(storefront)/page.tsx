@@ -11,6 +11,18 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
   const t = await getTranslations('Index');
   
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  let userRole = 'GUEST';
+  if (user) {
+    const { data: userData } = await supabase
+      .from('app_users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    userRole = userData?.role || 'CUSTOMER';
+  }
+
   const { data: products } = await supabase
     .from('products')
     .select('*')
@@ -118,7 +130,7 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
             </Link>
           </div>
 
-          <FilterableShowcase products={products || []} categories={uniqueCategories} />
+          <FilterableShowcase products={products || []} categories={uniqueCategories} userRole={userRole} />
         </div>
       </section>
 

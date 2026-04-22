@@ -49,10 +49,10 @@ export default function BundleOfferForm({ offer, onClose, onSuccess }: BundleOff
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-hidden">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose} />
       
-      <div className="relative w-full max-w-2xl bg-white dark:bg-[#0D1518] rounded-[2rem] shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in duration-300 max-h-[95vh] flex flex-col">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-[#0D1518] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl border-t sm:border border-border overflow-hidden animate-in slide-in-from-bottom sm:zoom-in duration-300 max-h-[92dvh] sm:max-h-[95vh] flex flex-col">
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-8 py-6 border-b border-border bg-slate-50/50 dark:bg-white/[0.02]">
           <div>

@@ -40,6 +40,24 @@
   --radius: 12px;
 }
 
+/* System Dark Mode & .dark class support */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #050708; /* Pure Night */
+    --foreground: #FFFFFF; /* Maximum Brightness */
+    
+    --primary: #86C1D4;
+    --primary-foreground: #001F29;
+    
+    --accent: #004D66;           /* Saturated Deep Blue */
+    --accent-foreground: #FFFFFF;
+    
+    --muted: #0F172A;
+    --muted-foreground: #CBD5E1; /* High Visibility Grey */
+    --border: #1E293B;
+  }
+}
+
 .dark {
   --background: #050708; /* Pure Night */
   --foreground: #FFFFFF; /* Maximum Brightness */

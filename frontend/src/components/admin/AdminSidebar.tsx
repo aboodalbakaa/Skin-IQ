@@ -34,13 +34,13 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
   return (
     <>
       {/* Mobile Top Header */}
-      <div className="sm:hidden fixed top-0 left-0 right-0 h-16 bg-primary text-white flex items-center justify-between px-6 z-40 border-b border-white/10 shadow-lg">
+      <div className="sm:hidden fixed top-0 left-0 right-0 h-16 bg-primary text-primary-foreground flex items-center justify-between px-6 z-40 border-b border-white/10 shadow-lg">
         <Link href="/admin" className="font-bold tracking-[0.2em] uppercase text-sm">
           Skin<span className="text-accent italic">IQ</span>
         </Link>
         <button 
           onClick={() => setIsOpen(true)}
-          className="p-2 -mr-2 text-white/70 hover:text-white"
+          className="p-2 -mr-2 text-primary-foreground/70 hover:text-primary-foreground"
         >
           <Menu className="w-6 h-6" />
         </button>
@@ -56,7 +56,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
 
       {/* Sidebar Content */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[60] w-72 bg-primary text-white transform transition-transform duration-500 ease-in-out sm:relative sm:translate-x-0
+        fixed inset-y-0 left-0 z-[60] w-72 bg-primary text-primary-foreground transform transition-transform duration-500 ease-in-out sm:relative sm:translate-x-0
         ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full sm:translate-x-0'}
         flex flex-col border-r border-white/10
       `}>
@@ -105,10 +105,12 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
         <div className="p-6 border-t border-white/10 space-y-4 bg-black/10">
           <Link 
             href="/" 
-            className="flex items-center justify-center gap-3 py-4 w-full border border-white/10 rounded-2xl hover:bg-white hover:text-primary transition-all text-[9.5px] font-bold tracking-[0.2em] uppercase"
+            className="flex items-center justify-center gap-3 py-4 w-full border border-white/10 rounded-2xl hover:bg-primary-foreground hover:text-primary transition-all text-[9.5px] font-bold tracking-[0.2em] uppercase"
           >
-            <Globe className="w-4 h-4" />
-            {t('back_to_store')}
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              {t('back_to_store')}
+            </div>
           </Link>
           <div className="pt-2 px-2 flex items-center justify-between opacity-40 text-[8px] font-black uppercase tracking-[0.3em]">
              <span>v1.2.0</span>

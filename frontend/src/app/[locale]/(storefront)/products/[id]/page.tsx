@@ -33,7 +33,20 @@ export default async function ProductDetailPage({
   const tc = await getTranslations('Common');
   
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   
+  let userRole = 'GUEST';
+  if (user) {
+    const { data: userData } = await supabase
+      .from('app_users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    userRole = userData?.role || 'CUSTOMER';
+  }
+
+  const isWholesale = userRole === 'WHOLESALE';
+
   // Fetch main product
   const { data: rawProduct } = await supabase
     .from('products')
@@ -60,6 +73,13 @@ export default async function ProductDetailPage({
 
   const displayImages = product.images && product.images.length > 0 ? product.images : [product.image_url];
   const specsList = product.specs ? product.specs.split('\n').filter((s: string) => s.trim()) : [];
+
+  const finalPrice = isWholesale 
+    ? (product.discount_wholesale_price || product.wholesale_price)
+    : (product.discount_retail_price || product.retail_price);
+  
+  const originalPrice = isWholesale ? product.wholesale_price : product.retail_price;
+  const hasDiscount = isWholesale ? !!product.discount_wholesale_price : !!product.discount_retail_price;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -120,19 +140,31 @@ export default async function ProductDetailPage({
                 {product.name}
               </h1>
 
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Purchase Value</span>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-black text-primary tracking-tighter">
-                    {(product.discount_retail_price || product.retail_price).toLocaleString()}
-                    <span className="text-sm ml-2 font-bold opacity-60 uppercase">{tc('iqd')}</span>
+              <div className="flex flex-col gap-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                  {isWholesale ? 'Wholesale Partner Price' : 'Retail Price'}
+                </span>
+                <div className="flex items-baseline gap-4">
+                  <span className="text-4xl sm:text-6xl font-black text-primary tracking-tighter tabular-nums">
+                    {finalPrice.toLocaleString()}
+                    <span className="text-sm ml-2 font-bold opacity-60 uppercase tracking-widest">{tc('iqd')}</span>
                   </span>
-                  {product.discount_retail_price && (
+                  {isWholesale ? (
+                    <span className="text-xl font-medium text-slate-300 line-through">
+                      {product.retail_price.toLocaleString()} {tc('iqd')}
+                    </span>
+                  ) : product.discount_retail_price && (
                     <span className="text-xl font-medium text-slate-300 line-through">
                       {product.retail_price.toLocaleString()}
                     </span>
                   )}
                 </div>
+                {isWholesale && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/10 rounded-full self-start">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Partner Exclusive Rate</span>
+                  </div>
+                )}
               </div>
 
               <div className="py-6 border-y border-border">
@@ -148,7 +180,7 @@ export default async function ProductDetailPage({
                     Out of Stock
                   </div>
                 ) : (
-                  <CartButtonDetails product={product} />
+                  <CartButtonDetails product={product as any} isWholesale={isWholesale} />
                 )}
               </div>
 
@@ -242,7 +274,7 @@ export default async function ProductDetailPage({
                     You Might Also <span className="italic text-primary font-serif">Like</span>
                  </h2>
               </div>
-              <ProductGrid products={relatedProducts as any} />
+              <ProductGrid products={relatedProducts as any} userRole={userRole} />
             </div>
           )}
         </div>

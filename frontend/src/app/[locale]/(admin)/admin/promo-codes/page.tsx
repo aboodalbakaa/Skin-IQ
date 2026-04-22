@@ -107,7 +107,7 @@ export default async function PromoCodesPage() {
                         <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">
                           <Ticket className="w-4 h-4" />
                         </div>
-                        <span className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl font-black tracking-widest text-primary dark:text-white uppercase border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <span className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl font-black tracking-widest text-slate-900 dark:text-white uppercase border-2 border-slate-200 dark:border-slate-700 shadow-sm block">
                           {promo.code}
                         </span>
                       </div>

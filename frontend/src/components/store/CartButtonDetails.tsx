@@ -9,21 +9,28 @@ interface CartButtonDetailsProps {
     id: string;
     name: string;
     retail_price: number;
+    wholesale_price: number;
     discount_retail_price?: number | null;
+    discount_wholesale_price?: number | null;
     image_url: string;
   };
+  isWholesale?: boolean;
 }
 
-export default function CartButtonDetails({ product }: CartButtonDetailsProps) {
+export default function CartButtonDetails({ product, isWholesale }: CartButtonDetailsProps) {
   const addItem = useCartStore((state) => state.addItem);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
+    const finalPrice = isWholesale 
+      ? (product.discount_wholesale_price || product.wholesale_price)
+      : (product.discount_retail_price || product.retail_price);
+
     addItem({
       id: product.id,
       name: product.name,
-      price: product.discount_retail_price || product.retail_price,
+      price: finalPrice,
       quantity: quantity,
       image_url: product.image_url,
     });

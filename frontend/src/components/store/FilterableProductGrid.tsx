@@ -20,9 +20,10 @@ interface Product {
 interface FilterableProductGridProps {
   products: Product[];
   categories: string[];
+  userRole?: string;
 }
 
-export default function FilterableProductGrid({ products, categories }: FilterableProductGridProps) {
+export default function FilterableProductGrid({ products, categories, userRole }: FilterableProductGridProps) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   const filtered = activeCategory
@@ -34,7 +35,7 @@ export default function FilterableProductGrid({ products, categories }: Filterab
       <div className="mb-6">
         <CategoryFilter categories={categories} onFilter={setActiveCategory} />
       </div>
-      <ProductGrid products={filtered} />
+      <ProductGrid products={filtered} userRole={userRole} />
     </>
   );
 }
