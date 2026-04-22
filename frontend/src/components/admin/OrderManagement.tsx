@@ -59,6 +59,11 @@ export default function OrderManagement({ initialOrders }: OrderManagementProps)
   const [searchQuery, setSearchQuery] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
+  // Keep local state in sync with server data when it revalidates
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
+
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     setUpdatingStatus(orderId);
     try {
