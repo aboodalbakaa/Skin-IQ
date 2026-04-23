@@ -86,9 +86,9 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
 
               {/* Image Container */}
               <Link href={`/products/${product.id}`} className="block">
-                <div className="aspect-square bg-muted mb-4 overflow-hidden rounded-lg border border-border relative">
+                <div className="aspect-square bg-slate-50 dark:bg-white/5 mb-4 overflow-hidden rounded-2xl border border-border relative p-6 flex items-center justify-center group-hover:shadow-lg transition-shadow">
                   {product.is_out_of_stock && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/5 backdrop-blur-[2px]">
                       <span className="px-4 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
                         Sold Out
                       </span>
@@ -97,48 +97,46 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
                   <img 
                     src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                     alt={product.name}
-                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
+                    className={`w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                   />
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 flex flex-col pt-2">
-                  <h3 className="font-bold text-slate-900 dark:text-white leading-tight min-h-[40px] line-clamp-2 uppercase tracking-tight text-xs sm:text-sm group-hover:text-primary transition-colors">
+                <div className="flex-1 flex flex-col pt-2 space-y-3">
+                  <h3 className="font-black text-slate-900 dark:text-white leading-tight min-h-[40px] line-clamp-2 uppercase tracking-tight text-xs sm:text-sm group-hover:text-primary transition-colors">
                     {product.name}
                   </h3>
                   
-                  <div className="mt-2 flex flex-col gap-0.5">
+                  <div className="flex flex-col gap-1">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                      {isWholesale ? 'Wholesale Price' : 'Retail Price'}
+                      {isWholesale ? 'Wholesale Partner Price' : 'Premium Retail Price'}
                     </span>
-                    <p className="text-primary dark:text-accent font-black text-sm sm:text-lg tracking-tight tabular-nums">
-                      {finalPrice.toLocaleString()} 
-                      <span className="text-[10px] sm:text-xs ml-1 opacity-90 uppercase font-black">{tCommon('iqd')}</span>
-                    </p>
-                    {isWholesale ? (
-                       <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-bold">
-                        Retail: <span className="line-through">{product.retail_price.toLocaleString()} {tCommon('iqd')}</span>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-primary dark:text-accent font-black text-lg sm:text-xl tracking-tight tabular-nums">
+                        {finalPrice.toLocaleString()} 
+                        <span className="text-[10px] sm:text-xs ml-1 uppercase font-black">{tCommon('iqd')}</span>
                       </p>
-                    ) : product.discount_retail_price && (
-                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-through font-bold">
-                        {product.retail_price.toLocaleString()} {tCommon('iqd')}
-                      </p>
-                    )}
+                      {hasReference && (
+                        <p className="text-[10px] sm:text-xs text-slate-400 line-through font-bold">
+                          {referencePrice.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Link>
               
-              {/* Add to Cart */}
+              {/* Add to Cart - Detached and Consistent Styling */}
               {product.is_out_of_stock ? (
-                <div className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-not-allowed">
-                  Out of Stock
+                <div className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-slate-100 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 cursor-not-allowed">
+                  Sold Out
                 </div>
               ) : (
                 <button 
                   onClick={() => addItem({ ...product, price: finalPrice, quantity: 1 })}
-                  className="mt-6 flex items-center justify-center gap-2 w-full py-4 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-primary hover:text-white hover:border-primary active:scale-[0.98] shadow-sm hover:shadow-xl hover:shadow-primary/20"
+                  className="mt-6 flex items-center justify-center gap-3 w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] transition-all hover:bg-primary hover:text-white hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-xl hover:shadow-primary/20 group/btn"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 transition-transform group-hover/btn:rotate-90" />
                   {t('add_to_cart')}
                 </button>
               )}

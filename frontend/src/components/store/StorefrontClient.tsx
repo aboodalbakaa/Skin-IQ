@@ -91,11 +91,11 @@ export default function StorefrontClient({
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {titleLines.map((line: string, i: number) => (
-                <div key={i} className="overflow-hidden">
+                <div key={i} className="py-2">
                   <h1 
-                    className="text-6xl sm:text-8xl lg:text-[11rem] font-light tracking-tight text-foreground leading-[0.8] animate-text-reveal uppercase px-4"
+                    className="text-6xl sm:text-8xl lg:text-[11rem] font-light tracking-tight text-foreground leading-[0.9] animate-text-reveal uppercase px-4 pb-4"
                     style={{ animationDelay: `${0.2 + (i * 0.1)}s` }}
                     dangerouslySetInnerHTML={{ __html: line }}
                   />

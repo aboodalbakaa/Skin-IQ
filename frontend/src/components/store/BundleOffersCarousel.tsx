@@ -94,7 +94,7 @@ export default function BundleOffersCarousel({ offers, locale = 'en' }: BundleOf
             {isAr ? 'عروض حصرية' : 'Exclusive Offers'}
           </div>
         </div>
-        <h2 className="text-3xl sm:text-5xl font-light tracking-tighter text-foreground uppercase leading-none">
+        <h2 className="text-3xl sm:text-5xl font-light tracking-tighter text-foreground uppercase leading-tight">
           {isAr ? (
             <>عروض <span className="italic font-serif text-red-500">خاصة</span></>
           ) : (
@@ -149,14 +149,14 @@ export default function BundleOffersCarousel({ offers, locale = 'en' }: BundleOf
                 </div>
 
                 {/* Offer Image */}
-                <div className="relative aspect-[16/9] overflow-hidden">
+                <div className="relative aspect-[16/9] overflow-hidden bg-slate-50 dark:bg-white/5 p-4 flex items-center justify-center">
                   <img
                     src={offer.image_url}
                     alt={isAr ? offer.title_ar : offer.title_en}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
+                    className="w-full h-full object-contain transition-transform duration-700 group-hover/card:scale-105"
                   />
                   {/* Gradient Overlay at Bottom */}
-                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white dark:from-slate-900 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
                 </div>
 
                 {/* Content */}

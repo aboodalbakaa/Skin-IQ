@@ -120,8 +120,8 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
             >
               <div className="group relative bg-white dark:bg-slate-900 border border-border shadow-sm rounded-3xl lg:rounded-[2.5rem] p-3 lg:p-4 h-full flex flex-col transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
                 
-                {/* Image & Hotspots */}
-                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6">
+                {/* Image Area */}
+                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-slate-50 dark:bg-white/5 p-6 flex items-center justify-center border border-border">
                    {/* Badge */}
                    {(product.badge || isWholesale) && (
                     <div className={`absolute top-4 left-4 z-10 px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
@@ -134,73 +134,66 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
                   <img 
                     src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
+                    className={`w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                   />
 
                   {/* Out of Stock Overlay */}
                   {product.is_out_of_stock && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/5 backdrop-blur-[2px]">
                       <span className="px-5 py-2 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
                         Sold Out
                       </span>
                     </div>
                   )}
-
-                  {/* Quick Action Overlay */}
-                  {!product.is_out_of_stock && (
-                    <div className="absolute inset-x-2 lg:inset-x-4 bottom-2 lg:bottom-4 translate-y-0 lg:translate-y-20 lg:group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
-                      <button 
-                        onClick={() => addItem({ ...product, price: finalPrice, quantity: 1 })}
-                        className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-2 shadow-2xl"
-                      >
-                        <ShoppingBag className="w-4 h-4" />
-                        Quick Add
-                      </button>
-                    </div>
-                  )}
                   
-                  {/* Visual Polish */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                  
-                  {/* Always-visible product title on image */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 z-10">
-                    <h3 className="text-sm sm:text-base font-black text-white leading-tight line-clamp-2 drop-shadow-lg">
-                      {product.name}
-                    </h3>
-                  </div>
+                  {/* Visual Polish Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/5 via-transparent to-transparent pointer-events-none" />
                 </div>
 
                 {/* Info */}
-                <Link href={`/products/${product.id}`} className="flex-1 px-2 space-y-2 cursor-pointer">
-                  <div className="flex items-center gap-1 text-amber-400">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
-                  </div>
-                  <h3 className="text-sm lg:text-lg font-black text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                    {product.name}
-                  </h3>
-                  <div className="flex justify-between items-end pt-2">
-                    <div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em] block mb-1">
-                        {isWholesale ? 'Wholesale Price' : 'Retail Price'}
+                <div className="flex-1 px-1 space-y-4">
+                  <Link href={`/products/${product.id}`} className="block group/link space-y-3">
+                    <div className="flex items-center gap-1 text-amber-400/80">
+                      {[...Array(5)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 fill-current" />)}
+                    </div>
+                    <h3 className="text-sm lg:text-base font-black text-slate-900 dark:text-white leading-tight line-clamp-2 group-hover/link:text-primary transition-colors uppercase tracking-tight">
+                      {product.name}
+                    </h3>
+                    
+                    <div className="flex flex-col gap-1 pt-1">
+                      <span className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">
+                        {isWholesale ? 'Wholesale Partner Price' : 'Premium Retail Price'}
                       </span>
-                      <span className="text-xl font-black text-primary flex items-baseline gap-2 tabular-nums">
-                        {finalPrice.toLocaleString()} <span className="text-xs">IQD</span>
-                        {isWholesale ? (
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-black text-primary tabular-nums">
+                          {finalPrice.toLocaleString()} <span className="text-[10px] uppercase ml-1">IQD</span>
+                        </span>
+                        {hasDiscount && (
                           <span className="text-[10px] font-bold text-slate-400 line-through">
-                            Retail: {product.retail_price.toLocaleString()}
-                          </span>
-                        ) : product.discount_retail_price && (
-                          <span className="text-sm font-medium text-slate-400 line-through">
-                            {product.retail_price.toLocaleString()}
+                            {originalPrice.toLocaleString()}
                           </span>
                         )}
-                      </span>
+                      </div>
                     </div>
-                    <div className="w-10 h-10 rounded-full border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-300 group-hover:border-primary group-hover:text-primary transition-colors">
-                      <ArrowRight className="w-5 h-5" />
+                  </Link>
+
+                  {/* Quick Action Button - Moved below and detached */}
+                  {!product.is_out_of_stock && (
+                    <button 
+                      onClick={() => addItem({ ...product, price: finalPrice, quantity: 1 })}
+                      className="w-full py-4 mt-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all hover:bg-primary hover:text-white hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-xl hover:shadow-primary/20 group/btn"
+                    >
+                      <Plus className="w-4 h-4 transition-transform group-hover/btn:rotate-90" />
+                      Quick Add
+                    </button>
+                  )}
+
+                  {product.is_out_of_stock && (
+                    <div className="w-full py-4 mt-2 bg-slate-100 dark:bg-white/5 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 border border-dashed border-slate-200 dark:border-white/10 cursor-not-allowed">
+                      Unavailable
                     </div>
-                  </div>
-                </Link>
+                  )}
+                </div>
               </div>
             </div>
           );
