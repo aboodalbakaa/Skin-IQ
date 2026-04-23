@@ -139,7 +139,7 @@ export default function StorefrontClient({
       )}
 
       {/* Dynamic Product Showcase Section with Category Filter */}
-      <section className="relative w-full py-24 overflow-hidden bg-white/30 dark:bg-transparent">
+      <section id="store" className="relative w-full py-24 overflow-hidden bg-white/30 dark:bg-transparent">
         
         {/* Background Ambient Flow - Luxe Gold Accents */}
         <div className="absolute inset-0 pointer-events-none z-0">
