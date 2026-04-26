@@ -4,12 +4,15 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { ShoppingBag, User, Heart, Search } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
+import { useFavoritesStore } from '@/store/favoritesStore';
 import GlobalSearch from './GlobalSearch';
 
 export default function Navbar() {
   const t = useTranslations('Navbar');
   const cartItems = useCartStore((state) => state.items);
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const favoriteItems = useFavoritesStore((state) => state.items);
+  const favoriteCount = favoriteItems.length;
 
   return (
     <header className="sticky top-0 z-50 w-full glass border-b border-border transition-all">
@@ -42,9 +45,17 @@ export default function Navbar() {
               <User className="w-5 h-5 text-foreground" />
             </Link>
             
-            <Link href="/wishlist" className="hidden sm:block p-2 hover:bg-muted rounded-full transition-colors">
+            <button 
+              className="p-2 hover:bg-muted rounded-full transition-colors relative"
+              onClick={() => useFavoritesStore.getState().openFavorites()}
+            >
               <Heart className="w-5 h-5 text-foreground" />
-            </Link>
+              {favoriteCount > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-primary rounded-full transform translate-x-1 -translate-y-1">
+                  {favoriteCount}
+                </span>
+              )}
+            </button>
 
             <button 
               className="p-2 hover:bg-muted rounded-full transition-colors relative"

@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { useCartStore } from '@/store/cartStore';
+import { useFavoritesStore } from '@/store/favoritesStore';
 import { Heart, Plus } from 'lucide-react';
-import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 
 interface Product {
@@ -29,17 +29,11 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
   const tCommon = useTranslations('Common');
   const locale = tCommon('iqd') === 'دينار عراقي' ? 'ar' : 'en';
   const addItem = useCartStore((state) => state.addItem);
-  const [wishlist, setWishlist] = useState<Set<string>>(new Set());
+  const { items: favoriteItems, toggleFavorite } = useFavoritesStore();
+  
+  const wishlist = new Set(favoriteItems.map(item => item.id));
 
   const isWholesale = userRole === 'WHOLESALE';
-
-  const toggleWishlist = (id: string) => {
-    setWishlist(prev => {
-      const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-      return newSet;
-    });
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" id="store">
@@ -78,7 +72,17 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
               
               {/* Wishlist Button */}
               <button 
-                onClick={() => toggleWishlist(product.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite({
+                    id: product.id,
+                    name: product.name,
+                    price: finalPrice,
+                    image_url: product.image_url,
+                    is_out_of_stock: product.is_out_of_stock
+                  });
+                }}
                 className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity hover:bg-white"
               >
                 <Heart className={`w-4 h-4 ${wishlist.has(product.id) ? 'fill-primary text-primary' : 'text-slate-600 dark:text-slate-300'}`} />
@@ -86,7 +90,7 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
 
               {/* Image Container */}
               <Link href={`/products/${product.id}`} className="block">
-                <div className="aspect-square bg-slate-50 dark:bg-white/5 mb-4 overflow-hidden rounded-2xl border border-border relative p-6 flex items-center justify-center group-hover:shadow-lg transition-shadow">
+                <div className="aspect-square bg-slate-50 dark:bg-white/5 mb-4 overflow-hidden rounded-2xl border border-border relative flex items-center justify-center group-hover:shadow-lg transition-shadow">
                   {product.is_out_of_stock && (
                     <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/5 backdrop-blur-[2px]">
                       <span className="px-4 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">
@@ -97,7 +101,7 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
                   <img 
                     src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                     alt={product.name}
-                    className={`w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 ease-out ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                   />
                 </div>
 

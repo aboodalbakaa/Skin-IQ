@@ -3,7 +3,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCartStore } from '@/store/cartStore';
-import { ShoppingBag, Star, ChevronRight, ChevronLeft, ArrowRight, Plus } from 'lucide-react';
+import { useFavoritesStore } from '@/store/favoritesStore';
+import { ShoppingBag, Star, ChevronRight, ChevronLeft, ArrowRight, Plus, Heart } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 
 interface Product {
@@ -29,6 +30,8 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
   const t = useTranslations('Products');
   const tCommon = useTranslations('Common');
   const addItem = useCartStore((state) => state.addItem);
+  const { items: favoriteItems, toggleFavorite } = useFavoritesStore();
+  const wishlist = new Set(favoriteItems.map(item => item.id));
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -121,7 +124,7 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
               <div className="group relative bg-white dark:bg-slate-900 border border-border shadow-sm rounded-3xl lg:rounded-[2.5rem] p-3 lg:p-4 h-full flex flex-col transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
                 
                 {/* Image Area */}
-                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-slate-50 dark:bg-white/5 p-6 flex items-center justify-center border border-border">
+                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-border">
                    {/* Badge */}
                    {(product.badge || isWholesale) && (
                     <div className={`absolute top-4 left-4 z-10 px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
@@ -130,11 +133,29 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
                       {isWholesale ? 'Wholesale Partner' : product.badge}
                     </div>
                   )}
+
+                  {/* Wishlist Button */}
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFavorite({
+                        id: product.id,
+                        name: product.name,
+                        price: finalPrice,
+                        image_url: product.image_url,
+                        is_out_of_stock: product.is_out_of_stock
+                      });
+                    }}
+                    className="absolute top-4 right-4 z-10 p-2 bg-white/80 backdrop-blur-md rounded-full shadow-sm opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity hover:bg-white"
+                  >
+                    <Heart className={`w-4 h-4 ${wishlist.has(product.id) ? 'fill-primary text-primary' : 'text-slate-600 dark:text-slate-300'}`} />
+                  </button>
                   
                   <img 
                     src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                     alt={product.name}
-                    className={`w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
+                    className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                   />
 
                   {/* Out of Stock Overlay */}
