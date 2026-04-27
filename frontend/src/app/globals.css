@@ -18,7 +18,7 @@
   --color-border: var(--border);
   --radius-lg: var(--radius);
   
-  --font-arabic: var(--font-ibm-plex-arabic), 'IBM Plex Sans Arabic', sans-serif;
+  --font-arabic: var(--font-cairo), 'Cairo', sans-serif;
 }
 
 :root {

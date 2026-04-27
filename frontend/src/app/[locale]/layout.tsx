@@ -2,7 +2,7 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, setRequestLocale} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
-import { Outfit, IBM_Plex_Sans_Arabic } from 'next/font/google';
+import { Outfit, Cairo } from 'next/font/google';
 import "../globals.css";
 import { Toaster } from 'sonner';
 import { Analytics } from "@vercel/analytics/react";
@@ -14,11 +14,11 @@ const outfit = Outfit({
   variable: '--font-outfit',
 });
 
-const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+const cairo = Cairo({
   subsets: ['arabic'],
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700', '800'],
   display: 'swap',
-  variable: '--font-ibm-plex-arabic',
+  variable: '--font-cairo',
 });
 
 export const metadata = {
@@ -52,7 +52,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir}>
-      <body className={`${outfit.variable} ${ibmPlexArabic.variable} antialiased min-h-screen flex flex-col ${locale === 'ar' ? 'font-arabic' : ''}`}>
+      <body className={`${outfit.variable} ${cairo.variable} antialiased min-h-screen flex flex-col ${locale === 'ar' ? 'font-arabic' : ''}`}>
         <NextIntlClientProvider messages={messages}>
           <div className="flex-1">
             {children}

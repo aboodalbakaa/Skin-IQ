@@ -56,8 +56,8 @@ export default function StorefrontClient({
         {/* Dynamic Background Elements with Parallax */}
         <div className="absolute inset-0 pointer-events-none z-0">
           <div 
-            className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 animate-mesh"
-            style={{ transform: `translateY(${scrollY * 0.2}px)` }}
+            className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
+            style={{ transform: `translateY(${scrollY * 0.1}px)` }}
           />
 
           {/* Admin Managed Background Image Overlay (Main Visual Anchor) */}
@@ -68,7 +68,7 @@ export default function StorefrontClient({
                 backgroundImage: `url(${heroConfig.bg_image_url})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                transform: `translateY(${scrollY * 0.08}px) scale(${1.05 + scrollY * 0.0001})`
+                transform: `translateY(${scrollY * 0.05}px)`
               }}
             />
           )}
@@ -98,8 +98,8 @@ export default function StorefrontClient({
                 <div key={i} className="py-2">
                   <h1 
                     className={`
-                      ${locale === 'ar' ? 'text-4xl sm:text-6xl lg:text-7xl xl:text-8xl' : 'text-6xl sm:text-8xl lg:text-[11rem]'}
-                      font-light tracking-tight text-foreground leading-[1.1] sm:leading-[0.9] animate-text-reveal uppercase px-4 pb-4
+                      ${locale === 'ar' ? 'text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold' : 'text-6xl sm:text-8xl lg:text-[11rem] font-light'}
+                      tracking-tight text-foreground leading-[1.2] sm:leading-[0.9] animate-text-reveal uppercase px-4 pb-4
                     `}
                     style={{ animationDelay: `${0.2 + (i * 0.1)}s` }}
                     dangerouslySetInnerHTML={{ __html: line }}
@@ -109,7 +109,10 @@ export default function StorefrontClient({
             </div>
 
             <div className="overflow-hidden flex justify-center px-4">
-              <p className="text-base sm:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-3xl animate-text-reveal font-medium" style={{ animationDelay: '0.6s' }}>
+              <p className={`
+                ${locale === 'ar' ? 'text-sm sm:text-lg lg:text-xl' : 'text-base sm:text-xl lg:text-2xl'}
+                text-muted-foreground leading-relaxed max-w-3xl animate-text-reveal font-medium
+              `} style={{ animationDelay: '0.6s' }}>
                 {heroConfig.subtitle}
               </p>
             </div>
