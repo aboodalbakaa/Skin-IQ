@@ -94,6 +94,10 @@ body {
   line-height: 1.2;
 }
 
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Global Meta Text Fix */
 .text-meta {
   color: #475569; /* slate-600 */
