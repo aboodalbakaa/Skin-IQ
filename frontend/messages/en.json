@@ -36,7 +36,11 @@
     "subtitle": "Your premium AI-driven destination for holistic health, exclusive wholesale ordering, and uncompromising quality.",
     "shop": "Shop Collection",
     "wholesale": "Wholesale Login",
-    "footer": "© 2026 SkinIQ. Powered by the A.N.T. System."
+    "footer": "© 2026 SkinIQ. Powered by the A.N.T. System.",
+    "highlights": "Selected Highlights",
+    "current": "Current ",
+    "favorites": "Favorites",
+    "view_all": "View All Collection"
   },
   "Wholesale": {
     "login_title": "Wholesale Login",

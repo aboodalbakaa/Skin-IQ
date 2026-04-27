@@ -17,6 +17,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --radius-lg: var(--radius);
+  
+  --font-arabic: var(--font-ibm-plex-arabic), 'IBM Plex Sans Arabic', sans-serif;
 }
 
 :root {
@@ -79,6 +81,17 @@ body {
   font-family: 'Outfit', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.font-arabic {
+  font-family: var(--font-arabic) !important;
+  line-height: 1.6;
+}
+
+.font-arabic h1, 
+.font-arabic h2, 
+.font-arabic h3 {
+  line-height: 1.2;
 }
 
 /* Global Meta Text Fix */

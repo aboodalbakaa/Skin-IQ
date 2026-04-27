@@ -23,6 +23,7 @@ export default function StorefrontClient({
   const [scrollY, setScrollY] = useState(0);
   const t = useTranslations('Navbar');
   const t_consult = useTranslations('Consultation');
+  const t_index = useTranslations('Index');
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -96,7 +97,10 @@ export default function StorefrontClient({
               {titleLines.map((line: string, i: number) => (
                 <div key={i} className="py-2">
                   <h1 
-                    className="text-6xl sm:text-8xl lg:text-[11rem] font-light tracking-tight text-foreground leading-[0.9] animate-text-reveal uppercase px-4 pb-4"
+                    className={`
+                      ${locale === 'ar' ? 'text-4xl sm:text-6xl lg:text-7xl xl:text-8xl' : 'text-6xl sm:text-8xl lg:text-[11rem]'}
+                      font-light tracking-tight text-foreground leading-[1.1] sm:leading-[0.9] animate-text-reveal uppercase px-4 pb-4
+                    `}
                     style={{ animationDelay: `${0.2 + (i * 0.1)}s` }}
                     dangerouslySetInnerHTML={{ __html: line }}
                   />
@@ -113,7 +117,11 @@ export default function StorefrontClient({
             <div className="pt-12 overflow-hidden flex justify-center">
               <div className="animate-text-reveal" style={{ animationDelay: '0.7s' }}>
                 <Link
-                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground px-14 py-7 sm:px-20 sm:py-10 text-[10px] sm:text-xs font-black tracking-[0.3em] uppercase transition-all hover:scale-110 active:scale-95 shadow-[0_20px_50px_rgba(var(--primary),0.2)]"
+                  className={`
+                    group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground 
+                    ${locale === 'ar' ? 'px-12 py-6 sm:px-16 sm:py-8 text-sm' : 'px-14 py-7 sm:px-20 sm:py-10 text-[10px] sm:text-xs'}
+                    font-black tracking-[0.3em] uppercase transition-all hover:scale-110 active:scale-95 shadow-[0_20px_50px_rgba(var(--primary),0.2)]
+                  `}
                   href={heroConfig.button_link || "/#store"}
                 >
                   <span className="relative z-10">{heroConfig.button_text}</span>
@@ -158,7 +166,10 @@ export default function StorefrontClient({
                 </div>
                 
                 <h2 
-                  className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tighter text-foreground uppercase leading-[1.1]"
+                  className={`
+                    ${locale === 'ar' ? 'text-3xl sm:text-4xl lg:text-5xl' : 'text-4xl sm:text-5xl lg:text-6xl'}
+                    font-light tracking-tighter text-foreground uppercase leading-[1.1]
+                  `}
                   dangerouslySetInnerHTML={{ __html: t_consult('title') }}
                 />
                 
@@ -172,7 +183,11 @@ export default function StorefrontClient({
                   href="https://dr-daniya.vercel.app/" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground px-12 py-7 text-[10px] font-black tracking-[0.3em] uppercase transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/5"
+                  className={`
+                    group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground 
+                    ${locale === 'ar' ? 'px-10 py-5 text-sm' : 'px-12 py-7 text-[10px]'}
+                    font-black tracking-[0.3em] uppercase transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/5
+                  `}
                 >
                   <span className="relative z-10 font-black">{t_consult('button')}</span>
                   <div className="absolute inset-0 bg-accent translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
@@ -195,12 +210,13 @@ export default function StorefrontClient({
         <div className="relative z-10 max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-8 px-6 sm:px-12 lg:px-24 gap-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-primary opacity-60">
+              <div className="flex items-center gap-2 text-[10px] rtl:text-xs font-black uppercase tracking-[0.4em] text-primary opacity-60">
                 <span className="w-12 h-[1px] bg-current" />
-                Selected Highlights
+                {t_index('highlights')}
               </div>
-              <h2 className="text-4xl sm:text-5xl font-light tracking-tighter text-foreground uppercase leading-none">
-                Current <span className="italic">Favorites</span>
+              <h2 className={`text-4xl sm:text-5xl ${locale === 'ar' ? 'text-3xl sm:text-4xl' : ''} font-light tracking-tighter text-foreground uppercase leading-none`}>
+                {t_index('current')}
+                <span className="italic">{t_index('favorites')}</span>
               </h2>
               <p className="text-muted-foreground max-w-sm font-medium leading-relaxed">
                 A moving collection of curated formulas for your specific skin intelligence.
@@ -208,10 +224,10 @@ export default function StorefrontClient({
             </div>
             <Link 
               href="/products" 
-              className="group flex items-center gap-4 px-8 py-4 bg-white/10 backdrop-blur-md border border-border rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all shadow-xl shadow-black/5"
+              className={`group flex items-center gap-4 px-8 py-4 bg-white/10 backdrop-blur-md border border-border rounded-2xl ${locale === 'ar' ? 'text-sm' : 'text-xs'} font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all shadow-xl shadow-black/5`}
             >
-              View All Collection
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {t_index('view_all')}
+              <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${locale === 'ar' ? 'rotate-180' : ''}`} />
             </Link>
           </div>
 

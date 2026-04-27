@@ -25,7 +25,7 @@ export default function Navbar() {
               href="https://dr-daniya.vercel.app/" 
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] font-black tracking-[0.2em] text-muted-foreground uppercase hover:text-primary transition-all flex items-center gap-2 group"
+              className="text-[10px] rtl:text-xs font-black tracking-[0.2em] text-muted-foreground uppercase hover:text-primary transition-all flex items-center gap-2 group"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(var(--accent),0.5)]" />
               <span className="group-hover:translate-x-1 transition-transform duration-300">{t('consultation')}</span>
