@@ -43,10 +43,10 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
             <GlobalSearch />
             
-            <div className="hidden lg:flex items-center gap-4 mr-2 text-[10px] font-bold tracking-[0.3em] text-muted-foreground uppercase">
-              <Link href="/" locale="en" className="hover:text-primary transition-all">EN</Link>
+            <div className="flex items-center gap-2 sm:gap-4 mr-1 sm:mr-2 text-[9px] sm:text-[10px] font-bold tracking-[0.2em] sm:tracking-[0.3em] text-muted-foreground uppercase">
+              <Link href="/" locale="en" className="hover:text-primary transition-all py-1 px-0.5 sm:px-1">EN</Link>
               <div className="w-[1px] h-3 bg-border" />
-              <Link href="/" locale="ar" className="hover:text-primary transition-all font-arabic text-sm">AR</Link>
+              <Link href="/" locale="ar" className="hover:text-primary transition-all font-arabic text-xs py-1 px-0.5 sm:px-1">AR</Link>
             </div>
 
             <Link href="/account" className="p-2 hover:bg-muted rounded-full transition-colors" aria-label={t('account')}>
