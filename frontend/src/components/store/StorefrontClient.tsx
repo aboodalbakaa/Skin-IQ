@@ -22,6 +22,7 @@ export default function StorefrontClient({
 }) {
   const [scrollY, setScrollY] = useState(0);
   const t = useTranslations('Navbar');
+  const t_consult = useTranslations('Consultation');
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -137,6 +138,50 @@ export default function StorefrontClient({
           </div>
         </section>
       )}
+
+
+      {/* 🩺 Medical Consultation CTA Section */}
+      <section className="relative w-full py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-secondary/30 dark:bg-primary/5 -skew-y-2 origin-right transform scale-110 -z-10" />
+        
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-24">
+          <div className="glass p-12 sm:p-20 rounded-[3rem] border border-white/20 shadow-2xl relative overflow-hidden group">
+            {/* Decorative background circle */}
+            <div className="absolute -top-24 -right-24 w-80 h-80 bg-accent/10 blur-[100px] rounded-full group-hover:bg-accent/20 transition-colors duration-700" />
+            <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-primary/10 blur-[100px] rounded-full group-hover:bg-primary/20 transition-colors duration-700" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
+              <div className="max-w-2xl space-y-8 text-center md:text-left">
+                <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-black tracking-[0.4em] uppercase mx-auto md:mx-0">
+                  <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
+                  {t_consult('badge')}
+                </div>
+                
+                <h2 
+                  className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tighter text-foreground uppercase leading-[1.1]"
+                  dangerouslySetInnerHTML={{ __html: t_consult('title') }}
+                />
+                
+                <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl font-medium">
+                  {t_consult('subtitle')}
+                </p>
+              </div>
+
+              <div className="shrink-0">
+                <a 
+                  href="https://dr-daniya.vercel.app/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground px-12 py-7 text-[10px] font-black tracking-[0.3em] uppercase transition-all hover:scale-105 active:scale-95 shadow-xl shadow-black/5"
+                >
+                  <span className="relative z-10 font-black">{t_consult('button')}</span>
+                  <div className="absolute inset-0 bg-accent translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Dynamic Product Showcase Section with Category Filter */}
       <section id="store" className="relative w-full py-24 overflow-hidden bg-white/30 dark:bg-transparent">

@@ -19,9 +19,17 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          {/* Left section: Spacer on mobile, Menu on desktop */}
+          {/* Left section: Consultation Link */}
           <div className="hidden sm:flex items-center gap-4 flex-1">
-            <div className="w-full max-w-[200px]" />
+            <a 
+              href="https://dr-daniya.vercel.app/" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-black tracking-[0.2em] text-muted-foreground uppercase hover:text-primary transition-all flex items-center gap-2 group"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(var(--accent),0.5)]" />
+              <span className="group-hover:translate-x-1 transition-transform duration-300">{t('consultation')}</span>
+            </a>
           </div>
 
           {/* Center section: Logo */}

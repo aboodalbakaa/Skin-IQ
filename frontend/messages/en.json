@@ -14,7 +14,14 @@
     "wholesale": "Wholesale Access",
     "account": "Account",
     "search": "Search products...",
-    "cart": "Shopping Cart"
+    "cart": "Shopping Cart",
+    "consultation": "Medical Consultation"
+  },
+  "Consultation": {
+    "title": "Not sure which <br /> <span class=\"italic font-serif text-accent\">Product to Select?</span>",
+    "subtitle": "Get a professional medical consultation for your skin issues with Dr. Daniya to find the perfect routine for your skin intelligence.",
+    "button": "Get Consultation Now",
+    "badge": "Expert Guidance"
   },
   "Search": {
     "placeholder": "Search products...",
