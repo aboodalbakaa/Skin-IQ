@@ -2,7 +2,7 @@ import { Link } from '@/i18n/routing';
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-muted border-t border-border transition-colors mt-auto">
+    <footer className="w-full bg-muted border-t border-border transition-colors mt-auto pb-24 lg:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
         
         {/* Brand & Copyright */}
