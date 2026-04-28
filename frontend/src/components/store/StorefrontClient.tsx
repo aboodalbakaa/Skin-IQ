@@ -134,7 +134,7 @@ export default function StorefrontClient({
 
               <div className="animate-text-reveal" style={{ animationDelay: '0.8s' }}>
                 <a
-                  href="https://dr-daniya.vercel.app/"
+                  href="https://dr-daniya.vercel.app/consultation"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`

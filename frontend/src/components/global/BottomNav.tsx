@@ -14,7 +14,7 @@ export default function BottomNav() {
   const navItems = [
     { href: '/', icon: Home, label: t('home') },
     { href: '/products', icon: ShoppingBag, label: t('shop') },
-    { href: 'https://dr-daniya.vercel.app/', icon: Stethoscope, label: t('consultation'), external: true },
+    { href: 'https://dr-daniya.vercel.app/consultation', icon: Stethoscope, label: t('consultation'), external: true },
     { href: '/account', icon: User, label: t('account') },
   ];
 

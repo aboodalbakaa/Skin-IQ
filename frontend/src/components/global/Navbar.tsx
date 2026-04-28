@@ -22,7 +22,7 @@ export default function Navbar() {
           {/* Left section: Consultation Link */}
           <div className="hidden sm:flex items-center gap-4 flex-1">
             <a 
-              href="https://dr-daniya.vercel.app/" 
+              href="https://dr-daniya.vercel.app/consultation" 
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] rtl:text-xs font-black tracking-[0.2em] text-muted-foreground uppercase hover:text-primary transition-all flex items-center gap-2 group"
