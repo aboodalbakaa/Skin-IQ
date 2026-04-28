@@ -149,7 +149,7 @@ export default function BundleOffersCarousel({ offers, locale = 'en' }: BundleOf
                 </div>
 
                 {/* Offer Image */}
-                <div className="relative aspect-[16/9] overflow-hidden bg-slate-50 dark:bg-white/5 flex items-center justify-center p-6">
+                <div className="relative aspect-[16/9] overflow-hidden bg-white dark:bg-white flex items-center justify-center p-2">
                   <img
                     src={offer.image_url}
                     alt={isAr ? offer.title_ar : offer.title_en}

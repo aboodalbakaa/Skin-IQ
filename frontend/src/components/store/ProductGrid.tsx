@@ -90,7 +90,7 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
 
               {/* Image Container */}
               <Link href={`/products/${product.id}`} className="block">
-                <div className="aspect-square bg-slate-50 dark:bg-white/5 mb-4 overflow-hidden rounded-2xl border border-border relative flex items-center justify-center group-hover:shadow-lg transition-shadow p-6">
+                <div className="aspect-square bg-white dark:bg-white mb-4 overflow-hidden rounded-2xl border border-border relative flex items-center justify-center group-hover:shadow-lg transition-shadow p-2">
                   {product.is_out_of_stock && (
                     <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/5 backdrop-blur-[2px]">
                       <span className="px-4 py-1.5 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-lg">

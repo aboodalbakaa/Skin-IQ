@@ -124,7 +124,7 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
               <div className="group relative bg-white dark:bg-slate-900 border border-border shadow-sm rounded-3xl lg:rounded-[2.5rem] p-3 lg:p-4 h-full flex flex-col transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
                 
                 {/* Image Area */}
-                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-border p-6 lg:p-8">
+                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-white dark:bg-white flex items-center justify-center border border-border p-2 lg:p-3">
                    {/* Badge */}
                    {(product.badge || isWholesale) && (
                     <div className={`absolute top-4 left-4 z-10 px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
