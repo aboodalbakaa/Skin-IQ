@@ -124,7 +124,7 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
               <div className="group relative bg-white dark:bg-slate-900 border border-border shadow-sm rounded-3xl lg:rounded-[2.5rem] p-3 lg:p-4 h-full flex flex-col transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
                 
                 {/* Image Area */}
-                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-border">
+                <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-6 bg-slate-50 dark:bg-white/5 flex items-center justify-center border border-border p-6 lg:p-8">
                    {/* Badge */}
                    {(product.badge || isWholesale) && (
                     <div className={`absolute top-4 left-4 z-10 px-4 py-1.5 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg ${
@@ -155,7 +155,7 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
                   <img 
                     src={product.image_url || 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop'} 
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
+                    className={`w-full h-full object-contain transition-transform duration-1000 group-hover:scale-110 ${product.is_out_of_stock ? 'grayscale opacity-60' : ''}`}
                   />
 
                   {/* Out of Stock Overlay */}

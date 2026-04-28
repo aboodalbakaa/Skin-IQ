@@ -149,11 +149,11 @@ export default function BundleOffersCarousel({ offers, locale = 'en' }: BundleOf
                 </div>
 
                 {/* Offer Image */}
-                <div className="relative aspect-[16/9] overflow-hidden bg-slate-50 dark:bg-white/5 flex items-center justify-center">
+                <div className="relative aspect-[16/9] overflow-hidden bg-slate-50 dark:bg-white/5 flex items-center justify-center p-6">
                   <img
                     src={offer.image_url}
                     alt={isAr ? offer.title_ar : offer.title_en}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
+                    className="w-full h-full object-contain transition-transform duration-700 group-hover/card:scale-105"
                   />
                   {/* Gradient Overlay at Bottom */}
                   <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
