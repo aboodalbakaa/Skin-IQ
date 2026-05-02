@@ -121,14 +121,20 @@ export default function StorefrontClient({
               <div className="animate-text-reveal" style={{ animationDelay: '0.7s' }}>
                 <Link
                   className={`
-                    group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary text-primary-foreground 
-                    ${locale === 'ar' ? 'px-10 py-5 sm:px-14 sm:py-7 text-xs sm:text-sm' : 'px-12 py-6 sm:px-16 sm:py-8 text-[10px] sm:text-xs'}
-                    font-black tracking-[0.3em] uppercase transition-all hover:scale-110 active:scale-95 shadow-[0_20px_50px_rgba(var(--primary),0.2)]
+                    group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full
+                    bg-gradient-to-r from-rose-500 via-pink-500 to-orange-400
+                    text-white
+                    ${locale === 'ar' ? 'px-10 py-5 sm:px-14 sm:py-7 text-sm sm:text-base' : 'px-14 py-6 sm:px-20 sm:py-8 text-sm sm:text-base'}
+                    font-black tracking-[0.2em] uppercase transition-all duration-300 hover:scale-105 active:scale-95
+                    shadow-[0_0_30px_rgba(244,63,94,0.5)] hover:shadow-[0_0_60px_rgba(244,63,94,0.8)]
+                    animate-pulse-glow
                   `}
                   href={heroConfig.button_link || "/#store"}
                 >
-                  <span className="relative z-10">{heroConfig.button_text}</span>
-                  <div className="absolute inset-0 bg-accent translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500" />
+                  {/* Shimmer sweep */}
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 z-20" />
+                  <span className="relative z-30 drop-shadow-sm">{heroConfig.button_text}</span>
+                  <ArrowRight className={`relative z-30 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 ${locale === 'ar' ? 'rotate-180 group-hover:-translate-x-1 group-hover:translate-x-0' : ''}`} />
                 </Link>
               </div>
 
