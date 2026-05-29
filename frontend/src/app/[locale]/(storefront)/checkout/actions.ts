@@ -81,5 +81,34 @@ export async function submitSpotOrder({
     return { error: "Failed to add items to order." };
   }
 
+  // Fire Telegram notification (non-blocking — never fail the order if this errors)
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (token && chatId) {
+      const orderId = order.id.slice(0, 8).toUpperCase();
+      const total = Number(total_amount).toLocaleString();
+      const lines = [
+        `🛍️ *طلب جديد — Skin-IQ*`,
+        ``,
+        `🆔 رقم الطلب: \`${orderId}\``,
+        `👤 الاسم: ${contact_name}`,
+        `📞 الهاتف: ${contact_phone}`,
+        `📍 العنوان: ${address}`,
+        google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
+        promo_code ? `🎟️ كود الخصم: ${promo_code} (${Number(discount_amount).toLocaleString()} IQD)` : null,
+        `💰 المجموع: *${total} IQD*`,
+      ].filter(Boolean).join('\n');
+
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'Markdown' }),
+      });
+    }
+  } catch {
+    // Notification failure must never block the order
+  }
+
   return { success: true, orderId: order.id };
 }
