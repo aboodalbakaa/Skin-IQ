@@ -88,17 +88,60 @@ export async function submitSpotOrder({
     if (token && chatId) {
       const orderId = order.id.slice(0, 8).toUpperCase();
       const total = Number(total_amount).toLocaleString();
+
+      // Fetch product names & bundle titles for line items
+      const productIds = items
+        .filter(i => !i.id.startsWith('bundle-'))
+        .map(i => i.id);
+      const bundleIds = items
+        .filter(i => i.id.startsWith('bundle-'))
+        .map(i => i.id.replace('bundle-', ''));
+
+      const [productsResult, bundlesResult] = await Promise.all([
+        productIds.length > 0
+          ? supabase.from('products').select('id, name, name_en, price').in('id', productIds)
+          : { data: [] },
+        bundleIds.length > 0
+          ? supabase.from('bundle_offers').select('id, title_ar, bundle_price').in('id', bundleIds)
+          : { data: [] },
+      ]);
+
+      const productMap = new Map(
+        (productsResult.data || []).map(p => [p.id, p])
+      );
+      const bundleMap = new Map(
+        (bundlesResult.data || []).map(b => [b.id, b])
+      );
+
+      // Build product lines
+      const productLines = items.map((item) => {
+        const isBundle = item.id.startsWith('bundle-');
+        if (isBundle) {
+          const bundle = bundleMap.get(item.id.replace('bundle-', ''));
+          const name = bundle?.title_ar || 'عرض';
+          return `  • ${name} ×${item.quantity} — ${Number(item.price * item.quantity).toLocaleString()} IQD`;
+        }
+        const product = productMap.get(item.id);
+        const name = product?.name || 'منتج';
+        const unitPrice = Number(item.price).toLocaleString();
+        const lineTotal = Number(item.price * item.quantity).toLocaleString();
+        return `  • ${name} — ${unitPrice} IQD ×${item.quantity} = ${lineTotal} IQD`;
+      });
+
       const lines = [
         `🛍️ *طلب جديد — Skin-IQ*`,
         ``,
-        `🆔 رقم الطلب: \`${orderId}\``,
+        `🆔 رقم الطلب: \\`${orderId}\\``,
         `👤 الاسم: ${contact_name}`,
         `📞 الهاتف: ${contact_phone}`,
         `📍 العنوان: ${address}`,
         google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
+        ``,
+        `*المنتجات:*`,
+        ...productLines,
         promo_code ? `🎟️ كود الخصم: ${promo_code} (${Number(discount_amount).toLocaleString()} IQD)` : null,
         `💰 المجموع: *${total} IQD*`,
-      ].filter(Boolean).join('\n');
+      ].filter(Boolean).join('\\n');
 
       await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST',
