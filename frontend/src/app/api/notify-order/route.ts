@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/admin';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID!;
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   const discount = Number(order.discount_amount ?? 0);
 
   // Fetch order items with product/bundle details
-  const supabase = createClient();
+  const supabase = createAdminClient();
   const { data: orderItems } = await supabase
     .from('order_items')
     .select(`
