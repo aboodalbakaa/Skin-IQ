@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   const message = [
     `🛍️ *طلب جديد — Skin-IQ*`,
     ``,
-    `🆔 رقم الطلب: \\`${orderId}\\``,
+    `🆔 رقم الطلب: \`${orderId}\``,
     `👤 الاسم: ${order.contact_name ?? '—'}`,
     `📞 الهاتف: ${order.contact_phone ?? '—'}`,
     `📍 العنوان: ${order.address ?? '—'}`,
