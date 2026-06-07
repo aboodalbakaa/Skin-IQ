@@ -23,7 +23,7 @@ export default async function Home({params}: {params: Promise<{locale: string}>}
 
   const { data: products } = await supabase
     .from('products')
-    .select('*')
+    .select('id, name, description, retail_price, discount_retail_price, image_url, images, video_url, specs, how_to_use, category, is_active, is_out_of_stock, created_at, title_en, description_en, category_en')
     .eq('is_active', true)
     .limit(20);
 

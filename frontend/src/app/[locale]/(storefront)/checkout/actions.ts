@@ -82,76 +82,85 @@ export async function submitSpotOrder({
   }
 
   // Fire Telegram notification (non-blocking — never fail the order if this errors)
-  try {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    if (token && chatId) {
-      const orderId = order.id.slice(0, 8).toUpperCase();
-      const total = Number(total_amount).toLocaleString();
+    try {
+      const token = process.env.TELEGRAM_BOT_TOKEN;
+      const chatId = process.env.TELEGRAM_CHAT_ID;
+      if (token && chatId) {
+        const orderId = order.id.slice(0, 8).toUpperCase();
+        const total = Number(total_amount).toLocaleString();
 
-      // Fetch product names & bundle titles for line items
-      const productIds = items
-        .filter(i => !i.id.startsWith('bundle-'))
-        .map(i => i.id);
-      const bundleIds = items
-        .filter(i => i.id.startsWith('bundle-'))
-        .map(i => i.id.replace('bundle-', ''));
+        // Fetch product names & bundle titles for line items
+        const productIds = items
+          .filter(i => !i.id.startsWith('bundle-'))
+          .map(i => i.id);
+        const bundleIds = items
+          .filter(i => i.id.startsWith('bundle-'))
+          .map(i => i.id.replace('bundle-', ''));
 
-      const [productsResult, bundlesResult] = await Promise.all([
-        productIds.length > 0
-          ? supabase.from('products').select('id, name, name_en, price').in('id', productIds)
-          : { data: [] },
-        bundleIds.length > 0
-          ? supabase.from('bundle_offers').select('id, title_ar, bundle_price').in('id', bundleIds)
-          : { data: [] },
-      ]);
+        const [productsResult, bundlesResult] = await Promise.all([
+          productIds.length > 0
+            ? supabase.from('products').select('id, name, name_en, price').in('id', productIds)
+            : { data: [] },
+          bundleIds.length > 0
+            ? supabase.from('bundle_offers').select('id, title_ar, bundle_price').in('id', bundleIds)
+            : { data: [] },
+        ]);
 
-      const productMap = new Map(
-        (productsResult.data || []).map(p => [p.id, p])
-      );
-      const bundleMap = new Map(
-        (bundlesResult.data || []).map(b => [b.id, b])
-      );
+        const productMap = new Map(
+          (productsResult.data || []).map(p => [p.id, p])
+        );
+        const bundleMap = new Map(
+          (bundlesResult.data || []).map(b => [b.id, b])
+        );
 
-      // Build product lines
-      const productLines = items.map((item) => {
-        const isBundle = item.id.startsWith('bundle-');
-        if (isBundle) {
-          const bundle = bundleMap.get(item.id.replace('bundle-', ''));
-          const name = bundle?.title_ar || 'عرض';
-          return `  • ${name} ×${item.quantity} — ${Number(item.price * item.quantity).toLocaleString()} IQD`;
+        // Build product lines
+        const productLines = items.map((item) => {
+          const isBundle = item.id.startsWith('bundle-');
+          if (isBundle) {
+            const bundle = bundleMap.get(item.id.replace('bundle-', ''));
+            const name = bundle?.title_ar || 'عرض';
+            return `  • ${name} ×${item.quantity} — ${Number(item.price * item.quantity).toLocaleString()} IQD`;
+          }
+          const product = productMap.get(item.id);
+          const name = product?.name || 'منتج';
+          const unitPrice = Number(item.price).toLocaleString();
+          const lineTotal = Number(item.price * item.quantity).toLocaleString();
+          return `  • ${name} — ${unitPrice} IQD ×${item.quantity} = ${lineTotal} IQD`;
+        });
+
+        const lines = [
+          `🛍️ *طلب جديد — Skin-IQ*`,
+          ``,
+          `🆔 رقم الطلب: \`${orderId}\``,
+          `👤 الاسم: ${contact_name}`,
+          `📞 الهاتف: ${contact_phone}`,
+          `📍 العنوان: ${address}`,
+          google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
+          ``,
+          `*المنتجات:*`,
+          ...productLines,
+          promo_code ? `🎟️ كود الخصم: ${promo_code} (${Number(discount_amount).toLocaleString()} IQD)` : null,
+          `💰 المجموع: *${total} IQD*`,
+        ].filter(Boolean).join('\n');
+
+        const tgResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'Markdown' }),
+        });
+
+        if (!tgResponse.ok) {
+          const errText = await tgResponse.text();
+          console.error(`Telegram notify failed (${tgResponse.status}): ${errText}`);
+        } else {
+          console.log(`Telegram notification sent for order ${orderId}`);
         }
-        const product = productMap.get(item.id);
-        const name = product?.name || 'منتج';
-        const unitPrice = Number(item.price).toLocaleString();
-        const lineTotal = Number(item.price * item.quantity).toLocaleString();
-        return `  • ${name} — ${unitPrice} IQD ×${item.quantity} = ${lineTotal} IQD`;
-      });
-
-      const lines = [
-        `🛍️ *طلب جديد — Skin-IQ*`,
-        ``,
-        `🆔 رقم الطلب: \`${orderId}\``,
-        `👤 الاسم: ${contact_name}`,
-        `📞 الهاتف: ${contact_phone}`,
-        `📍 العنوان: ${address}`,
-        google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
-        ``,
-        `*المنتجات:*`,
-        ...productLines,
-        promo_code ? `🎟️ كود الخصم: ${promo_code} (${Number(discount_amount).toLocaleString()} IQD)` : null,
-        `💰 المجموع: *${total} IQD*`,
-      ].filter(Boolean).join('\\n');
-
-      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'Markdown' }),
-      });
+      } else {
+        console.warn('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured — skipping notification');
+      }
+    } catch (err) {
+      console.error('Telegram notification error:', err instanceof Error ? err.message : String(err));
     }
-  } catch {
-    // Notification failure must never block the order
-  }
 
   return { success: true, orderId: order.id };
 }

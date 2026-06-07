@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Lock, UserPlus, LogOut, Package, User } from 'lucide-react';
 import OrderHistory from '@/components/account/OrderHistory';
+import { syncAppUser } from './actions';
 
 export default function AccountPage() {
   const [session, setSession] = useState<any>(null);
@@ -51,6 +52,7 @@ export default function AccountPage() {
       if (error) {
         setErrorMsg(error.message);
       } else {
+        syncAppUser().catch(console.error);
         router.refresh();
       }
     } else {
@@ -73,6 +75,7 @@ export default function AccountPage() {
         setErrorMsg(error.message);
       } else if (data?.session) {
         // If confirmation is OFF, we get a session immediately
+        await syncAppUser();
         router.refresh();
       } else {
         setSuccessMsg("Registration successful! You can now sign in.");

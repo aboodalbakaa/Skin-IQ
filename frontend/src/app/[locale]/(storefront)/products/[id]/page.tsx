@@ -51,7 +51,7 @@ export default async function ProductDetailPage({
   // Fetch main product
   const { data: rawProduct } = await supabase
     .from('products')
-    .select('*')
+    .select('id, name, description, retail_price, discount_retail_price, image_url, images, video_url, specs, how_to_use, category, is_active, is_out_of_stock, created_at, title_en, description_en, category_en')
     .eq('id', id)
     .single();
 
@@ -64,7 +64,7 @@ export default async function ProductDetailPage({
   // Fetch related products (same category, limit 4)
   const { data: rawRelated } = await supabase
     .from('products')
-    .select('*')
+    .select('id, name, description, retail_price, discount_retail_price, image_url, images, video_url, specs, how_to_use, category, is_active, is_out_of_stock, created_at, title_en, description_en, category_en')
     .eq('is_active', true)
     .eq('category', product.category || '')
     .neq('id', id)
