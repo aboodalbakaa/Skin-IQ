@@ -76,10 +76,10 @@ export default async function ProductDetailPage({
   const specsList = product.specs ? product.specs.split('\n').filter((s: string) => s.trim()) : [];
 
   const finalPrice = isWholesale 
-    ? (product.discount_wholesale_price || product.wholesale_price)
+    ? (product.discount_wholesale_price || product.wholesale_price || product.retail_price)
     : (product.discount_retail_price || product.retail_price);
   
-  const originalPrice = isWholesale ? product.wholesale_price : product.retail_price;
+  const originalPrice = isWholesale ? (product.wholesale_price || product.retail_price) : product.retail_price;
   const hasDiscount = isWholesale ? !!product.discount_wholesale_price : !!product.discount_retail_price;
 
   return (
