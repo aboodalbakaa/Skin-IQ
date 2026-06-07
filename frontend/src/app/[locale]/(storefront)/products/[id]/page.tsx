@@ -59,7 +59,7 @@ export default async function ProductDetailPage({
     notFound();
   }
 
-  const product = rawProduct as Product;
+  const product = rawProduct as unknown as Product;
 
   // Fetch related products (same category, limit 4)
   const { data: rawRelated } = await supabase
@@ -70,7 +70,7 @@ export default async function ProductDetailPage({
     .neq('id', id)
     .limit(4);
 
-  const relatedProducts = (rawRelated as Product[]) || [];
+  const relatedProducts = (rawRelated as unknown as Product[]) || [];
 
   const displayImages = product.images && product.images.length > 0 ? product.images : [product.image_url];
   const specsList = product.specs ? product.specs.split('\n').filter((s: string) => s.trim()) : [];
