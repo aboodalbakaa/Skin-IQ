@@ -184,7 +184,7 @@ export async function submitSpotOrder({
       const lines = [
         `🛍️ *طلب جديد — Skin-IQ*`,
         ``,
-        `🆔 رقم الطلب: \\`${orderId}\\``,
+        `🆔 رقم الطلب: \`${orderId}\``,
         `👤 الاسم: ${contact_name}`,
         `📞 الهاتف: ${contact_phone}`,
         `📍 العنوان: ${address}`,
