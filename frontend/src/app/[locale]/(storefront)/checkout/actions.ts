@@ -3,15 +3,18 @@
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 
+interface CheckoutItem {
+  id: string;
+  quantity: number;
+}
+
 interface CheckoutPayload {
   contact_name: string;
   contact_phone: string;
   address: string;
   google_maps_link?: string;
   promo_code?: string | null;
-  discount_amount?: number;
-  total_amount: number;
-  items: { id: string; quantity: number; price: number }[];
+  items: CheckoutItem[];
 }
 
 export async function submitSpotOrder({ 
@@ -20,23 +23,103 @@ export async function submitSpotOrder({
   address,
   google_maps_link,
   promo_code,
-  discount_amount,
-  total_amount, 
   items 
 }: CheckoutPayload) {
-  // Use the admin client for guests to ensure we can verify the inserted ID
-  // regardless of RLS visibility on the anonymous session
   const supabase = createAdminClient();
-  
-  // Try to get user_id if they are logged in (using regular client for the auth check)
   const authClient = await createClient();
   const { data: { user } } = await authClient.auth.getUser();
-  
-  // CRITICAL: Ensure userId is either a valid UUID or NULL. 
-  // Never allow the string "undefined" to reach the database.
   const userId = (user && user.id && user.id !== 'undefined') ? user.id : null;
 
-  // 1. Create the Order
+  // ── STEP 1: Fetch ACTUAL prices from DB (ignore client-sent prices) ──
+  const productIds = items.filter(i => !i.id.startsWith('bundle-')).map(i => i.id);
+  const bundleIds = items.filter(i => i.id.startsWith('bundle-')).map(i => i.id.replace('bundle-', ''));
+
+  const [productsResult, bundlesResult] = await Promise.all([
+    productIds.length > 0
+      ? supabase.from('products').select('id, retail_price, wholesale_price, is_active, is_out_of_stock').in('id', productIds)
+      : { data: [] },
+    bundleIds.length > 0
+      ? supabase.from('bundle_offers').select('id, bundle_price, is_active').in('id', bundleIds)
+      : { data: [] },
+  ]);
+
+  const products = (productsResult.data || []) as any[];
+  const bundles = (bundlesResult.data || []) as any[];
+
+  const productMap = new Map(products.map(p => [p.id, p]));
+  const bundleMap = new Map(bundles.map(b => [b.id, b]));
+
+  // ── STEP 2: Validate items exist, are active, and in stock ──
+  let computedTotal = 0;
+  const orderItemsData: any[] = [];
+
+  for (const item of items) {
+    const isBundle = item.id.startsWith('bundle-');
+    const actualId = isBundle ? item.id.replace('bundle-', '') : item.id;
+    const qty = Math.max(1, Math.min(99, Math.floor(item.quantity))); // sanitize quantity
+
+    if (isBundle) {
+      const bundle = bundleMap.get(actualId);
+      if (!bundle || !bundle.is_active) {
+        return { error: `Bundle offer not found or inactive.` };
+      }
+      const unitPrice = Number(bundle.bundle_price);
+      orderItemsData.push({
+        order_id: '', // set after order creation
+        product_id: null,
+        bundle_offer_id: actualId,
+        quantity: qty,
+        unit_price: unitPrice,
+      });
+      computedTotal += unitPrice * qty;
+    } else {
+      const product = productMap.get(actualId);
+      if (!product) {
+        return { error: `Product not found.` };
+      }
+      if (!product.is_active || product.is_out_of_stock) {
+        return { error: `Product is unavailable or out of stock.` };
+      }
+      const unitPrice = Number(product.retail_price);
+      orderItemsData.push({
+        order_id: '',
+        product_id: actualId,
+        bundle_offer_id: null,
+        quantity: qty,
+        unit_price: unitPrice,
+      });
+      computedTotal += unitPrice * qty;
+    }
+  }
+
+  if (orderItemsData.length === 0) {
+    return { error: 'No valid items in order.' };
+  }
+
+  // ── STEP 3: Validate promo code server-side ──
+  let discountAmount = 0;
+  let validatedPromoCode: string | null = null;
+
+  if (promo_code) {
+    const { data: promoData } = await supabase
+      .from('promo_codes')
+      .select('discount_type, discount_value, is_active')
+      .eq('code', promo_code.toUpperCase())
+      .single();
+
+    if (promoData && promoData.is_active) {
+      validatedPromoCode = promo_code.toUpperCase();
+      if (promoData.discount_type === 'percentage') {
+        discountAmount = Math.round((computedTotal * Number(promoData.discount_value)) / 100);
+      } else {
+        discountAmount = Math.min(Number(promoData.discount_value), computedTotal);
+      }
+    }
+  }
+
+  const finalTotal = Math.max(0, computedTotal - discountAmount);
+
+  // ── STEP 4: Create Order ──
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
@@ -45,9 +128,9 @@ export async function submitSpotOrder({
       contact_phone,
       address,
       google_maps_link,
-      promo_code,
-      discount_amount: discount_amount || 0,
-      total_amount,
+      promo_code: validatedPromoCode,
+      discount_amount: discountAmount,
+      total_amount: finalTotal,
       status: 'PENDING'
     })
     .select('id')
@@ -58,109 +141,79 @@ export async function submitSpotOrder({
     return { error: "Failed to create order. Please try again." };
   }
 
-  // 2. Create Order Items
-  const orderItemsData = items.map(item => {
-    const isBundle = item.id.startsWith('bundle-');
-    const actualId = isBundle ? item.id.replace('bundle-', '') : item.id;
-    
-    return {
-      order_id: order.id,
-      product_id: isBundle ? null : actualId,
-      bundle_offer_id: isBundle ? actualId : null,
-      quantity: item.quantity,
-      unit_price: item.price
-    };
-  });
+  // ── STEP 5: Create Order Items ──
+  const itemsWithOrderId = orderItemsData.map(item => ({
+    ...item,
+    order_id: order.id,
+  }));
 
   const { error: itemsError } = await supabase
     .from('order_items')
-    .insert(orderItemsData);
+    .insert(itemsWithOrderId);
 
   if (itemsError) {
     console.error("Order items creation failed:", itemsError);
     return { error: "Failed to add items to order." };
   }
 
-  // Fire Telegram notification (non-blocking — never fail the order if this errors)
-    try {
-      const token = process.env.TELEGRAM_BOT_TOKEN;
-      const chatId = process.env.TELEGRAM_CHAT_ID;
-      if (token && chatId) {
-        const orderId = order.id.slice(0, 8).toUpperCase();
-        const total = Number(total_amount).toLocaleString();
+  // ── STEP 6: Telegram notification (non-blocking) ──
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (token && chatId) {
+      const orderId = order.id.slice(0, 8).toUpperCase();
+      const total = finalTotal.toLocaleString();
 
-        // Fetch product names & bundle titles for line items
-        const productIds = items
-          .filter(i => !i.id.startsWith('bundle-'))
-          .map(i => i.id);
-        const bundleIds = items
-          .filter(i => i.id.startsWith('bundle-'))
-          .map(i => i.id.replace('bundle-', ''));
-
-        const [productsResult, bundlesResult] = await Promise.all([
-          productIds.length > 0
-            ? supabase.from('products').select('id, name, name_en, price').in('id', productIds)
-            : { data: [] },
-          bundleIds.length > 0
-            ? supabase.from('bundle_offers').select('id, title_ar, bundle_price').in('id', bundleIds)
-            : { data: [] },
-        ]);
-
-        const productMap = new Map(
-          (productsResult.data || []).map(p => [p.id, p])
-        );
-        const bundleMap = new Map(
-          (bundlesResult.data || []).map(b => [b.id, b])
-        );
-
-        // Build product lines
-        const productLines = items.map((item) => {
-          const isBundle = item.id.startsWith('bundle-');
-          if (isBundle) {
-            const bundle = bundleMap.get(item.id.replace('bundle-', ''));
-            const name = bundle?.title_ar || 'عرض';
-            return `  • ${name} ×${item.quantity} — ${Number(item.price * item.quantity).toLocaleString()} IQD`;
-          }
-          const product = productMap.get(item.id);
-          const name = product?.name || 'منتج';
-          const unitPrice = Number(item.price).toLocaleString();
-          const lineTotal = Number(item.price * item.quantity).toLocaleString();
-          return `  • ${name} — ${unitPrice} IQD ×${item.quantity} = ${lineTotal} IQD`;
-        });
-
-        const lines = [
-          `🛍️ *طلب جديد — Skin-IQ*`,
-          ``,
-          `🆔 رقم الطلب: \`${orderId}\``,
-          `👤 الاسم: ${contact_name}`,
-          `📞 الهاتف: ${contact_phone}`,
-          `📍 العنوان: ${address}`,
-          google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
-          ``,
-          `*المنتجات:*`,
-          ...productLines,
-          promo_code ? `🎟️ كود الخصم: ${promo_code} (${Number(discount_amount).toLocaleString()} IQD)` : null,
-          `💰 المجموع: *${total} IQD*`,
-        ].filter(Boolean).join('\n');
-
-        const tgResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'Markdown' }),
-        });
-
-        if (!tgResponse.ok) {
-          const errText = await tgResponse.text();
-          console.error(`Telegram notify failed (${tgResponse.status}): ${errText}`);
-        } else {
-          console.log(`Telegram notification sent for order ${orderId}`);
+      const productLines = items.map((item) => {
+        const isBundle = item.id.startsWith('bundle-');
+        const actualId = isBundle ? item.id.replace('bundle-', '') : item.id;
+        if (isBundle) {
+          const bundle = bundleMap.get(actualId);
+          const name = bundle?.title_ar || 'عرض';
+          const qty = Math.max(1, Math.min(99, Math.floor(item.quantity)));
+          const unitPrice = Number(bundle?.bundle_price || 0);
+          return `  • ${name} ×${qty} — ${(unitPrice * qty).toLocaleString()} IQD`;
         }
-      } else {
-        console.warn('TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not configured — skipping notification');
-      }
-    } catch (err) {
-      console.error('Telegram notification error:', err instanceof Error ? err.message : String(err));
-    }
+        const product = productMap.get(actualId);
+        const name = product?.name || 'منتج';
+        const qty = Math.max(1, Math.min(99, Math.floor(item.quantity)));
+        const unitPrice = Number(product?.retail_price || 0);
+        return `  • ${name} — ${unitPrice.toLocaleString()} IQD ×${qty} = ${(unitPrice * qty).toLocaleString()} IQD`;
+      });
 
-  return { success: true, orderId: order.id };
+      const lines = [
+        `🛍️ *طلب جديد — Skin-IQ*`,
+        ``,
+        `🆔 رقم الطلب: \\`${orderId}\\``,
+        `👤 الاسم: ${contact_name}`,
+        `📞 الهاتف: ${contact_phone}`,
+        `📍 العنوان: ${address}`,
+        google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
+        ``,
+        `*المنتجات:*`,
+        ...productLines,
+        validatedPromoCode ? `🎟️ كود الخصم: ${validatedPromoCode} (${discountAmount.toLocaleString()} IQD)` : null,
+        `💰 المجموع: *${total} IQD*`,
+      ].filter(Boolean).join('\n');
+
+      const tgResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'Markdown' }),
+      });
+
+      if (!tgResponse.ok) {
+        const errText = await tgResponse.text();
+        console.error(`Telegram notify failed (${tgResponse.status}): ${errText}`);
+      }
+    }
+  } catch (err) {
+    console.error('Telegram notification error:', err instanceof Error ? err.message : String(err));
+  }
+
+  return { 
+    success: true, 
+    orderId: order.id.slice(0, 8).toUpperCase(),
+    total: finalTotal 
+  };
 }

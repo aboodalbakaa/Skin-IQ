@@ -101,16 +101,14 @@ export default function CheckoutPage() {
         address,
         google_maps_link: googleMapsLink,
         promo_code: promoType ? promoCode.toUpperCase() : null,
-        discount_amount: discountAmount,
-        total_amount: finalTotal,
-        items: items.map(i => ({ id: i.id, quantity: i.quantity, price: i.price }))
+        items: items.map(i => ({ id: i.id, quantity: i.quantity }))
       });
 
       if (result.error) {
         setError(result.error);
       } else {
         setSuccess(true);
-        if (result.orderId) setOrderId(result.orderId);
+        setOrderId(result.orderId || '');
         clearCart();
       }
     });

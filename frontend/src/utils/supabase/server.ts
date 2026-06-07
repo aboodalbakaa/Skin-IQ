@@ -27,3 +27,29 @@ export async function createClient() {
     }
   )
 }
+
+/**
+ * Verify the current user has an admin-level role.
+ * Throws if not authenticated or not authorized.
+ * Returns the user's role on success.
+ */
+export async function getAdminRole(allowedRoles: string[] = ['ADMIN', 'SUPER_ADMIN', 'MANAGER']): Promise<string> {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    throw new Error('Unauthorized')
+  }
+
+  const { data: userData } = await supabase
+    .from('app_users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!userData || !allowedRoles.includes(userData.role)) {
+    throw new Error('Unauthorized permissions')
+  }
+
+  return userData.role
+}
