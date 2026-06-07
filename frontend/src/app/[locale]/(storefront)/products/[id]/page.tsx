@@ -11,7 +11,7 @@ interface Product {
   name: string;
   description: string;
   retail_price: number;
-  wholesale_price: number;
+  wholesale_price?: number;
   discount_retail_price?: number | null;
   discount_wholesale_price?: number | null;
   image_url: string;
