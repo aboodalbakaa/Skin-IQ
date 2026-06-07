@@ -124,7 +124,7 @@ export default function CheckoutPage() {
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t('success_title')}</h1>
           <p className="text-slate-500 mb-6">
-            {t.rich('success_text', { orderId: <span className="font-mono text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-sm">{orderId}</span> })}
+            {t('success_text', { orderId })}
           </p>
           <Link href="/" className="inline-flex items-center justify-center w-full py-3.5 bg-primary text-white rounded-xl font-medium transition-all hover:opacity-90">
             {t('continue_shopping')}
