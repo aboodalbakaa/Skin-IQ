@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient, getAdminRole } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 async function uploadImageToStorage(file: File): Promise<string | null> {
@@ -37,6 +37,7 @@ async function deleteImageFromStorage(imageUrl: string): Promise<void> {
 }
 
 export async function createBundleOffer(formData: FormData) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   const title_ar = formData.get('title_ar') as string;
@@ -81,6 +82,7 @@ export async function createBundleOffer(formData: FormData) {
 }
 
 export async function updateBundleOffer(formData: FormData) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   const id = formData.get('id') as string;
@@ -131,6 +133,7 @@ export async function updateBundleOffer(formData: FormData) {
 }
 
 export async function deleteBundleOffer(id: string, imageUrl?: string) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   if (imageUrl && imageUrl.includes('supabase.co')) {
@@ -150,6 +153,7 @@ export async function deleteBundleOffer(id: string, imageUrl?: string) {
 }
 
 export async function toggleBundleActive(id: string, is_active: boolean) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   const { error } = await supabase

@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient, getAdminRole } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -52,6 +52,7 @@ async function deleteImageFromStorage(imageUrl: string): Promise<void> {
 // CREATE PRODUCT
 // ─────────────────────────────────────────
 export async function createProduct(formData: FormData) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   const name = formData.get('name') as string;
@@ -123,6 +124,7 @@ export async function createProduct(formData: FormData) {
 // UPDATE PRODUCT
 // ─────────────────────────────────────────
 export async function updateProduct(formData: FormData) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   const id = formData.get('id') as string;
@@ -203,6 +205,7 @@ export async function updateProduct(formData: FormData) {
 // DELETE PRODUCT
 // ─────────────────────────────────────────
 export async function deleteProduct(id: string, imageUrl?: string) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   // Delete the image from storage if it exists
@@ -229,6 +232,7 @@ export async function deleteProduct(id: string, imageUrl?: string) {
 // TOGGLE ACTIVE STATUS
 // ─────────────────────────────────────────
 export async function toggleProductActive(id: string, is_active: boolean) {
+  if (!await getAdminRole()) return { error: 'Unauthorized' };
   const supabase = await createClient();
 
   const { error } = await supabase

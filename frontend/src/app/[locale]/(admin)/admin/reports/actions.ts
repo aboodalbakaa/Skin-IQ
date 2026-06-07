@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient, getAdminRole } from '@/utils/supabase/server';
 
 export async function getDebtMatrixData() {
+  if (!await getAdminRole()) throw new Error('Unauthorized');
   const supabase = await createClient();
   
   const { data, error } = await supabase
@@ -27,6 +28,7 @@ export async function getDebtMatrixData() {
 }
 
 export async function getSalesSummaryData() {
+  if (!await getAdminRole()) throw new Error('Unauthorized');
   const supabase = await createClient();
   
   // Get all paid orders with items and products
@@ -57,6 +59,7 @@ export async function getSalesSummaryData() {
 }
 
 export async function getPartnerDirectoryData() {
+  if (!await getAdminRole()) throw new Error('Unauthorized');
   const supabase = await createClient();
   
   const { data, error } = await supabase
@@ -71,6 +74,7 @@ export async function getPartnerDirectoryData() {
 }
 
 export async function getInventoryAuditData() {
+  if (!await getAdminRole()) throw new Error('Unauthorized');
   const supabase = await createClient();
   
   const { data, error } = await supabase

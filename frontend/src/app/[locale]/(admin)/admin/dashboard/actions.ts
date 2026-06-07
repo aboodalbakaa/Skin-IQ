@@ -1,8 +1,9 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient, getAdminRole } from '@/utils/supabase/server';
 
 export async function getDashboardStats(days: number = 30) {
+  if (!await getAdminRole()) throw new Error('Unauthorized');
   const supabase = await createClient();
 
   // 1. Calculate Revenue & Debt by Status
@@ -144,6 +145,7 @@ export async function getDashboardStats(days: number = 30) {
 }
 
 export async function getDebtReportData() {
+  if (!await getAdminRole()) throw new Error('Unauthorized');
   const supabase = await createClient();
 
   const { data: debtOrders, error } = await supabase
