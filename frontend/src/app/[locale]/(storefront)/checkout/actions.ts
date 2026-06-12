@@ -36,10 +36,10 @@ export async function submitSpotOrder({
 
   const [productsResult, bundlesResult] = await Promise.all([
     productIds.length > 0
-      ? supabase.from('products').select('id, retail_price, wholesale_price, is_active, is_out_of_stock').in('id', productIds)
+      ? supabase.from('products').select('id, name, retail_price, wholesale_price, is_active, is_out_of_stock').in('id', productIds)
       : { data: [] },
     bundleIds.length > 0
-      ? supabase.from('bundle_offers').select('id, bundle_price, is_active').in('id', bundleIds)
+      ? supabase.from('bundle_offers').select('id, title_ar, bundle_price, is_active').in('id', bundleIds)
       : { data: [] },
   ]);
 
@@ -182,24 +182,24 @@ export async function submitSpotOrder({
       });
 
       const lines = [
-        `🛍️ *طلب جديد — Skin-IQ*`,
+        `<b>طلب جديد — Skin-IQ</b>`,
         ``,
-        `🆔 رقم الطلب: \`${orderId}\``,
-        `👤 الاسم: ${contact_name}`,
-        `📞 الهاتف: ${contact_phone}`,
-        `📍 العنوان: ${address}`,
-        google_maps_link ? `🗺️ الموقع: ${google_maps_link}` : null,
+        `رقم الطلب: <code>${orderId}</code>`,
+        `الاسم: ${contact_name}`,
+        `الهاتف: ${contact_phone}`,
+        `العنوان: ${address}`,
+        google_maps_link ? `الموقع: ${google_maps_link}` : null,
         ``,
-        `*المنتجات:*`,
+        `<b>المنتجات:</b>`,
         ...productLines,
-        validatedPromoCode ? `🎟️ كود الخصم: ${validatedPromoCode} (${discountAmount.toLocaleString()} IQD)` : null,
-        `💰 المجموع: *${total} IQD*`,
+        validatedPromoCode ? `كود الخصم: ${validatedPromoCode} (${discountAmount.toLocaleString()} IQD)` : null,
+        `المجموع: <b>${total} IQD</b>`,
       ].filter(Boolean).join('\n');
 
       const tgResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'Markdown' }),
+        body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'HTML' }),
       });
 
       if (!tgResponse.ok) {

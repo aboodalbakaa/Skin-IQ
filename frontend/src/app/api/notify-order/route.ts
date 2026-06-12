@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     .select(`
       quantity,
       unit_price,
-      products ( id, name, name_en, price ),
+      products ( id, name, retail_price ),
       bundle_offers ( id, title_ar, bundle_price )
     `)
     .eq('order_id', order.id);
@@ -53,18 +53,18 @@ export async function POST(req: NextRequest) {
   });
 
   const message = [
-    `🛍️ *طلب جديد — Skin-IQ*`,
+    `<b>طلب جديد — Skin-IQ</b>`,
     ``,
-    `🆔 رقم الطلب: \`${orderId}\``,
-    `👤 الاسم: ${order.contact_name ?? '—'}`,
-    `📞 الهاتف: ${order.contact_phone ?? '—'}`,
-    `📍 العنوان: ${order.address ?? '—'}`,
-    order.google_maps_link ? `🗺️ الموقع: ${order.google_maps_link}` : null,
+    `رقم الطلب: <code>${orderId}</code>`,
+    `الاسم: ${order.contact_name ?? '—'}`,
+    `الهاتف: ${order.contact_phone ?? '—'}`,
+    `العنوان: ${order.address ?? '—'}`,
+    order.google_maps_link ? `الموقع: ${order.google_maps_link}` : null,
     ``,
-    `*المنتجات:*`,
+    `<b>المنتجات:</b>`,
     ...productLines,
-    order.promo_code ? `🎟️ كود الخصم: ${order.promo_code} (${discount.toLocaleString()} IQD)` : null,
-    `💰 المجموع: *${total} IQD*`,
+    order.promo_code ? `كود الخصم: ${order.promo_code} (${discount.toLocaleString()} IQD)` : null,
+    `المجموع: <b>${total} IQD</b>`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         chat_id: TELEGRAM_CHAT_ID,
         text: message,
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
       }),
     }
   );

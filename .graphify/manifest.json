@@ -1,0 +1,394 @@
+{
+  "/root/Skin-IQ/frontend/eslint.config.mjs": {
+    "mtime": 1780858306903.1658,
+    "hash": "dfa1f5f6a7037bf39dc510f30b180002"
+  },
+  "/root/Skin-IQ/frontend/next.config.ts": {
+    "mtime": 1780859543007.6306,
+    "hash": "d6382040f707038be7e5cb3f8bfdcc77"
+  },
+  "/root/Skin-IQ/frontend/postcss.config.mjs": {
+    "mtime": 1780858306903.1658,
+    "hash": "239f3ebf717465dc636818a1a619398d"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/bundle-offers/actions.ts": {
+    "mtime": 1780863730569.2217,
+    "hash": "6166848420cf7be636e5d8e2947fa98a"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/bundle-offers/page.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "e9f54c68831c7e460e517d5254658978"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/dashboard/actions.ts": {
+    "mtime": 1780858306903.1658,
+    "hash": "a0b89b23ff2f8d79dbb97caff863782c"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/layout.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "c252b8fb2fcc849c70572d5c728914df"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/orders/actions.ts": {
+    "mtime": 1780863595600.7534,
+    "hash": "0cca8524df2fae5cc69c62d18fcc260a"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/orders/page.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "78fffc07ccaa693cf2c4efeafaac0627"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/page.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "bc1ac0f62ec042146b8ba58e03ecd7f0"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/products/actions.ts": {
+    "mtime": 1780863574968.6816,
+    "hash": "f6ea2040781c6b3b34a36054ac1e98fb"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/products/page.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "51a7a6f25c780c61900a5d148a2c06be"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/promo-codes/actions.ts": {
+    "mtime": 1780863625528.8574,
+    "hash": "fb1efd5bc0288301a08c8a2033f12642"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/promo-codes/page.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "0c993e1580d1b171ef7fa2919de2794c"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/reports/actions.ts": {
+    "mtime": 1780858306903.1658,
+    "hash": "54dd3d6d84864dd38a244a019924ef52"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/reports/page.tsx": {
+    "mtime": 1780858306903.1658,
+    "hash": "96b6516a4c7ff7fe0b1e5aa7da9684b9"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/settings/hero/actions.ts": {
+    "mtime": 1780858306903.1658,
+    "hash": "9601d8ef6ac0ccafb737eaf6768eb253"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/settings/hero/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "bb4d77140e5abca4c8f0a018faa69806"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/traffic/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "6d51bf35ab974d625b7aca2d8cafeaac"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/users/UserManagementTable.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "abfadb5080771e36358854a43e40d3de"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/users/actions.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "af8862836955eae81182e6f62d6474f2"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(admin)/admin/users/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "e66b9f3305794647b11bb1c727907c9c"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/account/actions.ts": {
+    "mtime": 1780859384603.0613,
+    "hash": "5bf45eaa79e34c58bfaad12d1d1d9cfc"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/account/page.tsx": {
+    "mtime": 1780859416623.1763,
+    "hash": "29a091e75b9b3653606d8b60f71a763f"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/cart/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "65bbe39008461ef1839155466b373acc"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/checkout/actions.ts": {
+    "mtime": 1780863957658.0046,
+    "hash": "597ab0377ed75ac4768053398bfae5d6"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/checkout/page.tsx": {
+    "mtime": 1780864744336.6023,
+    "hash": "ce1f9a911a6a48d35b42e552dcd22fda"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/layout.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "a4f6675d18b74c8c1b13a7fcf4b86265"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/page.tsx": {
+    "mtime": 1780860109397.0754,
+    "hash": "d86fb92a07466c7475ef2ea5b28f56e1"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/products/[id]/page.tsx": {
+    "mtime": 1780860159029.1602,
+    "hash": "3fd0092d284dcf78995188a69a04a452"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/products/page.tsx": {
+    "mtime": 1780860119393.092,
+    "hash": "ff2d33cb72d1d9b2c09134125c67009b"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/(storefront)/wholesale/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "1af1cf1f41ae785500a844cb818dd7fe"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/admin-login/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "0b86d801d655b61d6b7d4053c8d83f3f"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/layout.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "eabdda713e52e9fbcda7682a91401709"
+  },
+  "/root/Skin-IQ/frontend/src/app/api/notify-order/route.ts": {
+    "mtime": 1780859353002.9475,
+    "hash": "b03fdca3ef687e2eaa961a739e351ba1"
+  },
+  "/root/Skin-IQ/frontend/src/app/layout.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "f6edeae998c4986c56cf4106fc2f127e"
+  },
+  "/root/Skin-IQ/frontend/src/app/page.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "55c582a235bcac94fd3c5a015b7facc0"
+  },
+  "/root/Skin-IQ/frontend/src/components/account/OrderHistory.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "71f497b1fbb0ab5fb838231fcbddee08"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/AdminSidebar.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "1a182c6dd5806b8b938d922771eeda33"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/BundleOfferForm.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "6cd887143b5f6309e07ef50406df3689"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/BundleOfferTable.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "d17ce4bb31e87b205add8edf66fc067f"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/DashboardDateRange.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "1d78612a670ab37b5b7c8b95836f910b"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/DebtReport.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "23bb6e7ff500c14b9daef95ea7819dec"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/OrderManagement.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "bfcab47d9c86c4c2dc0b475559915020"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/ProductForm.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "69b936afe9800cbc08d7fcc5b4206e69"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/ProductTable.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "b3ed044bdec8992f61cacd2cb0900e64"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/PromoCodeStats.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "3433e6d64157fff8d7a0fbe9fe89e72a"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/RecentOrders.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "526629bcec8d5795d22aae023d31d193"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/ReportManager.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "d401dd3461686da8557b983bd277c67d"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/StatCards.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "be66269b8d84b55f3322acce8c0d9372"
+  },
+  "/root/Skin-IQ/frontend/src/components/admin/TopProducts.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "3fad9301ca13d3c65b45c617845b7862"
+  },
+  "/root/Skin-IQ/frontend/src/components/global/BottomNav.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "1477482ae51039708345e01dba1ff782"
+  },
+  "/root/Skin-IQ/frontend/src/components/global/Footer.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "9394bd588a83d414e5de268b3d50afdb"
+  },
+  "/root/Skin-IQ/frontend/src/components/global/GlobalSearch.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "59233da4c3cb8b5503caea7bbc93cf86"
+  },
+  "/root/Skin-IQ/frontend/src/components/global/Navbar.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "bc73679c115d4c9510660aaf7579b343"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/BundleOffersCarousel.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "a777ed4af5e2f5ec7c746b33f784992b"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/CartButtonDetails.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "3c2f25188350773f824125746b7b608e"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/CartModal.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "a374963b9c2c821f60d0cc4aa6c443df"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/CategoryLuxe.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "f753640bcec334530770da7bdfe81f6b"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/FavoritesModal.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "68a5b01fb4c301e8cec8ce2199ed23fb"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/FilterableProductGrid.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "3b121fc2121182ddc8796becef7e3167"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/FilterableShowcase.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "be78e2542b1b64ceb6f0dc95fc55dfb8"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/ProductGrid.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "303a48be66cf140cf16aa59b5bb257f2"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/ProductShowcase.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "1e74cbb806b2736ad6e85b300eba7166"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/StorefrontClient.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "ff699adbf53e3f506ddf3a1aa571a68d"
+  },
+  "/root/Skin-IQ/frontend/src/components/store/TrafficTracker.tsx": {
+    "mtime": 1780858306907.1658,
+    "hash": "74a55720f042368b1548794a6cdfe834"
+  },
+  "/root/Skin-IQ/frontend/src/i18n/request.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "cf5abecc06c36852555e68e9e8b2aa9f"
+  },
+  "/root/Skin-IQ/frontend/src/i18n/routing.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "ac16733d4fdeeeab1278949b2dc07796"
+  },
+  "/root/Skin-IQ/frontend/src/proxy.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "d9099a6037c97bdc75588cd013bf37d3"
+  },
+  "/root/Skin-IQ/frontend/src/store/cartStore.ts": {
+    "mtime": 1780863754317.3037,
+    "hash": "5b40ee7258a88493d4376b19394dac70"
+  },
+  "/root/Skin-IQ/frontend/src/store/favoritesStore.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "1296ae90d85e7bde07bb3a0c60f80586"
+  },
+  "/root/Skin-IQ/frontend/src/utils/supabase/admin.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "ffe6ede1b8fc2199c0e03975626662de"
+  },
+  "/root/Skin-IQ/frontend/src/utils/supabase/client.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "61c1909f1d999ab5bce7badf91236e54"
+  },
+  "/root/Skin-IQ/frontend/src/utils/supabase/middleware.ts": {
+    "mtime": 1780858306907.1658,
+    "hash": "6a42147c14b069f40ed246aab54b6aee"
+  },
+  "/root/Skin-IQ/frontend/src/utils/supabase/server.ts": {
+    "mtime": 1780863495440.4043,
+    "hash": "6a0b05efaee40bdbf60bc28c8cfd2bea"
+  },
+  "/root/Skin-IQ/tools/create_product.py": {
+    "mtime": 1780858306907.1658,
+    "hash": "3d44e27ffb37eed8891fb9144f76d8ca"
+  },
+  "/root/Skin-IQ/tools/trigger_wholesale_email.py": {
+    "mtime": 1780858306907.1658,
+    "hash": "ad745c9f17654647339800bf9c968bee"
+  },
+  "/root/Skin-IQ/tools/verify_supabase.py": {
+    "mtime": 1780858306907.1658,
+    "hash": "cdc615cb1eda8e39f7e721de7b0e13ed"
+  },
+  "/root/Skin-IQ/tools/watermark_image.py": {
+    "mtime": 1780858306911.1658,
+    "hash": "3a80d4fbe2c511a01c2f8820270912bb"
+  },
+  "/root/Skin-IQ/architecture/01_auth_and_wholesale.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "b03b21dc90f893bf0b008413d2f25faa"
+  },
+  "/root/Skin-IQ/architecture/02_orders_and_payments.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "2bacf897631e7eddf3af465f0c6199ef"
+  },
+  "/root/Skin-IQ/claude.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "56050167456ddfdeb3479f0d1549d18f"
+  },
+  "/root/Skin-IQ/findings.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "c7cff316514051fb9a39e778d391699a"
+  },
+  "/root/Skin-IQ/frontend/AGENTS.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "9e09241799026ac05be315a2f0b50055"
+  },
+  "/root/Skin-IQ/frontend/CLAUDE.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "5c27369b226fcf2be8a6cfe52224e767"
+  },
+  "/root/Skin-IQ/frontend/README.md": {
+    "mtime": 1780858306903.1658,
+    "hash": "f15aaa42d5d299d091b1171097ea56ad"
+  },
+  "/root/Skin-IQ/frontend/src/app/[locale]/admin/email_template.html": {
+    "mtime": 1780858306907.1658,
+    "hash": "a20e8ca5a66d7076e7582bd2d0b26d48"
+  },
+  "/root/Skin-IQ/gemini.md": {
+    "mtime": 1780858306907.1658,
+    "hash": "7befabc8a9404eca40df5eb60ee6f1d8"
+  },
+  "/root/Skin-IQ/progress.md": {
+    "mtime": 1780858306907.1658,
+    "hash": "f4583335819ae268feace70429d51093"
+  },
+  "/root/Skin-IQ/task_plan.md": {
+    "mtime": 1780858306907.1658,
+    "hash": "86c8315f066df7dc3242edb7ac3ae75f"
+  },
+  "/root/Skin-IQ/frontend/public/file.svg": {
+    "mtime": 1780858306903.1658,
+    "hash": "d09f95206c3fa0bb9bd9fefabfd0ea71"
+  },
+  "/root/Skin-IQ/frontend/public/globe.svg": {
+    "mtime": 1780858306903.1658,
+    "hash": "2aaafa6a49b6563925fe440891e32717"
+  },
+  "/root/Skin-IQ/frontend/public/hero-skincare.png": {
+    "mtime": 1780858306903.1658,
+    "hash": "eb075a3f08a8ef0a831d1b3b7252b8e0"
+  },
+  "/root/Skin-IQ/frontend/public/next.svg": {
+    "mtime": 1780858306903.1658,
+    "hash": "8e061864f388b47f33a1c3780831193e"
+  },
+  "/root/Skin-IQ/frontend/public/offers/eucerin-offer-1.jpg": {
+    "mtime": 1780858306903.1658,
+    "hash": "77bfe14000c4c3928247ee20c8d7ae4c"
+  },
+  "/root/Skin-IQ/frontend/public/offers/eucerin-offer-2.jpg": {
+    "mtime": 1780858306903.1658,
+    "hash": "b3dca308d060213a434396ce2b7df1b9"
+  },
+  "/root/Skin-IQ/frontend/public/vercel.svg": {
+    "mtime": 1780858306903.1658,
+    "hash": "c0af2f507b369b085b35ef4bbe3bcf1e"
+  },
+  "/root/Skin-IQ/frontend/public/window.svg": {
+    "mtime": 1780858306903.1658,
+    "hash": "a2760511c65806022ad20adf74370ff3"
+  }
+}
