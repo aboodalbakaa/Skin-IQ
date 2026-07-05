@@ -1,5 +1,4 @@
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import React from 'react';
@@ -12,10 +11,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   try {
-    const [supabase] = await Promise.all([
-      createClient(),
-      getTranslations('Admin').catch(() => null),
-    ]);
+    const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
 
