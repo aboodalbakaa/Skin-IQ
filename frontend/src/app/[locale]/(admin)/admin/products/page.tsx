@@ -1,8 +1,8 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import ProductTable from '@/components/admin/ProductTable';
 
 export default async function AdminProducts() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: products, error } = await supabase
     .from('products')

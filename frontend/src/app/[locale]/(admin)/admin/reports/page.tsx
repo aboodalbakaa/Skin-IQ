@@ -1,9 +1,9 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import ReportManager from '@/components/admin/ReportManager';
 import { FileText } from 'lucide-react';
 
 export default async function AdminReports() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   const { data: userData } = await supabase

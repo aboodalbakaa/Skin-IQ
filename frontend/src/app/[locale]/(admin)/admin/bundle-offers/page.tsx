@@ -1,8 +1,8 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import BundleOfferTable from '@/components/admin/BundleOfferTable';
 
 export default async function AdminBundleOffers() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: offers, error } = await supabase
     .from('bundle_offers')

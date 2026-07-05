@@ -1,5 +1,5 @@
 import { Package, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export default async function AdminOrders({ 
   searchParams 
@@ -7,7 +7,7 @@ export default async function AdminOrders({
   searchParams: Promise<{ query?: string }> 
 }) {
   const { query: initialQuery } = await searchParams;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   const { data: userData } = await supabase

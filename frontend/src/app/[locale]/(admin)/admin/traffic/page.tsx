@@ -1,8 +1,8 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { Globe, Users, Monitor, Smartphone, Tablet, Navigation, Clock, Activity, BarChart3, TrendingUp } from 'lucide-react';
 
 export default async function TrafficInsights() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // 1. Fetch Summary Data
   const { count: totalVisits } = await supabase

@@ -1,11 +1,11 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { Ticket, Plus, Trash2, Power, PowerOff } from 'lucide-react';
 import { createPromoCode, togglePromoStatus, deletePromoCode } from './actions';
 import { revalidatePath } from 'next/cache';
 import { PromoCodeDetails } from '@/components/admin/PromoCodeStats';
 
 export default async function PromoCodesPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: promoCodes } = await supabase
     .from('promo_codes')
     .select('*')

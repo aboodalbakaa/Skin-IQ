@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function getDashboardStats(days: number = 30) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // 1. Calculate Revenue & Debt by Status
   const { data: orderStats } = await supabase
@@ -144,7 +144,7 @@ export async function getDashboardStats(days: number = 30) {
 }
 
 export async function getDebtReportData() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: debtOrders, error } = await supabase
     .from('orders')

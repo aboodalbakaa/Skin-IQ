@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import UserManagementTable from './UserManagementTable';
 
 export default async function UserManagementPage({ 
@@ -7,7 +7,7 @@ export default async function UserManagementPage({
   searchParams: Promise<{ filter?: string }> 
 }) {
   const { filter } = await searchParams;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   const { data: userData } = await supabase
