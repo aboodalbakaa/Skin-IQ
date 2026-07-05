@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { Suspense } from 'react';
 import { Calendar, ChevronDown, Check } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
@@ -13,7 +14,7 @@ const RANGES = [
   { label: 'All Time', value: '3650' },
 ];
 
-export default function DashboardDateRange({ currentDays }: { currentDays: string }) {
+function DateRangeDropdown({ currentDays }: { currentDays: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -40,9 +41,7 @@ export default function DashboardDateRange({ currentDays }: { currentDays: strin
 
       {isOpen && (
         <>
-          {/* Backdrop to close */}
           <div className="fixed inset-0 z-[998]" onClick={() => setIsOpen(false)} />
-          
           <div className="absolute top-full left-0 md:left-auto md:right-0 mt-3 w-64 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-border rounded-[2rem] shadow-2xl overflow-hidden z-[999] animate-in fade-in zoom-in-95 duration-200">
             <div className="p-4 border-b border-border bg-slate-50/50 dark:bg-slate-800/50">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white">Select Range</span>
@@ -63,7 +62,6 @@ export default function DashboardDateRange({ currentDays }: { currentDays: strin
                 </button>
               ))}
             </div>
-            
             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-border">
               <p className="text-[9px] font-black text-slate-900 dark:text-slate-200 text-center leading-relaxed uppercase tracking-widest">
                 Analytics update instantly.
@@ -73,5 +71,18 @@ export default function DashboardDateRange({ currentDays }: { currentDays: strin
         </>
       )}
     </div>
+  );
+}
+
+export default function DashboardDateRange({ currentDays }: { currentDays: string }) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center gap-3 px-6 py-3 bg-white dark:bg-slate-900 border border-border rounded-2xl shadow-sm">
+        <Calendar className="w-4 h-4 text-primary" />
+        <span className="text-sm font-bold text-slate-400">Loading...</span>
+      </div>
+    }>
+      <DateRangeDropdown currentDays={currentDays} />
+    </Suspense>
   );
 }
