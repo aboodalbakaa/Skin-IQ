@@ -7,7 +7,7 @@ export async function updateHeroConfig(config: any) {
   const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) return { success: false, error: "Unauthorized" };
 
   // Verify admin role
   const { data: userData } = await supabase
@@ -17,7 +17,7 @@ export async function updateHeroConfig(config: any) {
     .single();
 
   if (!userData || !['ADMIN', 'SUPER_ADMIN'].includes(userData.role)) {
-    throw new Error("Unauthorized");
+    return { success: false, error: "Unauthorized" };
   }
 
   const { error } = await supabase
@@ -40,10 +40,10 @@ export async function updateHeroConfig(config: any) {
 export async function uploadHeroImage(formData: FormData) {
   const supabase = await createClient();
   const file = formData.get('file') as File;
-  if (!file) throw new Error("No file provided");
+  if (!file) return { success: false, error: "No file provided" };
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) return { success: false, error: "Unauthorized" };
 
   const fileExt = file.name.split('.').pop();
   const fileName = `hero_${Date.now()}.${fileExt}`;

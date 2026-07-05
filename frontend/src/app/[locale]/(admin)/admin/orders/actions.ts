@@ -4,7 +4,8 @@ import { createClient, getAdminRole } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  await getAdminRole();
+  const auth = await getAdminRole();
+  if (!auth.authorized) return { success: false, error: 'Unauthorized' };
   const supabase = await createClient();
 
   const { error } = await supabase
