@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import ProductTable from '@/components/admin/ProductTable';
-import { getAllProducts } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +14,16 @@ export default function AdminProducts() {
     try {
       setLoading(true);
       setError(null);
-      const data = await getAllProducts();
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'getAllProducts' }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
       setProducts(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load products');

@@ -1,26 +1,38 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import StatCards from '@/components/admin/StatCards';
 import DebtReport from '@/components/admin/DebtReport';
 import RecentOrders from '@/components/admin/RecentOrders';
 import TopProducts from '@/components/admin/TopProducts';
 import DashboardDateRange from '@/components/admin/DashboardDateRange';
-import { getDashboardStats, getDebtReportData } from './dashboard/actions';
 import { LayoutDashboard, TrendingUp } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-type StatsData = Awaited<ReturnType<typeof getDashboardStats>>;
-type DebtReportData = Awaited<ReturnType<typeof getDebtReportData>>;
+interface DashboardData {
+  metrics: {
+    clearedRevenue: number;
+    pendingRevenue: number;
+    outstandingDebt: number;
+    pendingWholesalers: number;
+    orderTrend: number;
+    orderVolume: number;
+    trafficVolume: number;
+    trafficTrend: number;
+  };
+  recentOrders: any[];
+  topProducts: any[];
+}
 
 export default function AdminDashboard() {
   const searchParams = useSearchParams();
   const daysParam = searchParams?.get('days');
   const daysNum = daysParam ? parseInt(daysParam) : 30;
-  const [statsData, setStatsData] = useState<StatsData | null>(null);
-  const [debtReportData, setDebtReportData] = useState<DebtReportData | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [debtData, setDebtData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,43 +40,46 @@ export default function AdminDashboard() {
 
     async function loadData() {
       try {
+        setLoading(true);
         setError(null);
-        const [stats, debt] = await Promise.all([
-          getDashboardStats(daysNum),
-          getDebtReportData()
-        ]);
+
+        // Fetch dashboard stats via API route
+        const statsRes = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getDashboardStats', days: daysNum }),
+        });
+        if (!statsRes.ok) {
+          const errBody = await statsRes.json().catch(() => ({}));
+          throw new Error(errBody.error || `HTTP ${statsRes.status}`);
+        }
+        const statsData = await statsRes.json();
+
+        // Fetch debt report via API route
+        const debtRes = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getDebtReportData' }),
+        });
+        const debtData = debtRes.ok ? await debtRes.json() : [];
+
         if (!cancelled) {
-          setStatsData(stats);
-          setDebtReportData(debt);
+          setData(statsData);
+          setDebtData(debtData);
         }
       } catch (err) {
         console.error('Dashboard load error:', err);
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+          setError(err instanceof Error ? err.message : 'Failed to load dashboard');
         }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadData();
     return () => { cancelled = true; };
   }, [daysNum]);
-
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto w-full space-y-10 pb-20">
-        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
-          <p className="font-medium">Error loading dashboard</p>
-          <p className="text-sm mt-1 opacity-75">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-7xl mx-auto w-full space-y-10 pb-20">
@@ -86,7 +101,6 @@ export default function AdminDashboard() {
 
         <div className="flex items-center gap-4">
           <DashboardDateRange currentDays={daysNum.toString()} />
-          
           <div className="hidden sm:flex items-center gap-2 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
              <TrendingUp className="w-4 h-4 text-emerald-500" />
              <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Live Sync</span>
@@ -94,27 +108,36 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Loading State */}
-      {!statsData ? (
+      {loading && (
         <DashboardSkeleton />
-      ) : (
-        <>
-          {/* Main Stats Grid */}
-          <StatCards stats={statsData.metrics} />
+      )}
 
-          {/* Insights Row */}
+      {error && (
+        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
+          <p className="font-medium">Could not load dashboard</p>
+          <p className="text-sm mt-1 opacity-75">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {data && !loading && !error && (
+        <>
+          <StatCards stats={data.metrics} />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2">
-               <RecentOrders orders={statsData.recentOrders} />
+               <RecentOrders orders={data.recentOrders} />
             </div>
             <div>
-               <TopProducts products={statsData.topProducts} />
+               <TopProducts products={data.topProducts} />
             </div>
           </div>
-
-          {/* Full Width Debt Report */}
           <div className="pt-4">
-            <DebtReport reportData={debtReportData || []} />
+            <DebtReport reportData={debtData} />
           </div>
         </>
       )}
@@ -125,36 +148,10 @@ export default function AdminDashboard() {
 
 function DashboardSkeleton() {
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <aside className="w-72 bg-primary text-primary-foreground border-r border-white/10 flex flex-col">
-        <div className="h-24 flex items-center px-8 border-b border-white/10">
-          <div className="font-bold text-2xl tracking-[0.2em] text-primary-foreground uppercase">
-            Skin<span className="text-accent font-bold italic">IQ</span>
-          </div>
-        </div>
-        <nav className="flex-1 py-10 px-6 space-y-2">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-12 rounded-2xl bg-white/5 animate-pulse" />
-          ))}
-        </nav>
-      </aside>
-      <main className="flex-1 p-12">
-        <div className="max-w-7xl mx-auto space-y-10">
-          <div className="space-y-4">
-            <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-            <div className="h-10 w-96 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-36 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <div className="lg:col-span-2 h-96 bg-slate-200 dark:bg-slate-800 rounded-[2rem] animate-pulse" />
-            <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-[2rem] animate-pulse" />
-          </div>
-        </div>
-      </main>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="h-36 bg-slate-200 dark:bg-slate-800 rounded-3xl animate-pulse" />
+      ))}
     </div>
   );
 }

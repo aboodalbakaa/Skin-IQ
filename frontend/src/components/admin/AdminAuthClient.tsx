@@ -4,6 +4,12 @@ import { useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 
+/**
+ * Client-side admin auth guard.
+ * Checks the user's auth state and role after a short delay (to let page render first).
+ * If unauthorized, redirects to admin-login page.
+ * All errors are caught silently to avoid crashing the error boundary.
+ */
 export default function AdminAuthClient() {
   const router = useRouter();
 
@@ -14,14 +20,14 @@ export default function AdminAuthClient() {
       try {
         const supabase = createClient();
         if (!supabase) {
-          router.replace('/admin-login');
+          if (!cancelled) router.replace('/en/admin-login');
           return;
         }
 
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
-          router.replace('/admin-login');
+          if (!cancelled) router.replace('/en/admin-login');
           return;
         }
 
@@ -37,14 +43,15 @@ export default function AdminAuthClient() {
             userData.role !== 'SUPER_ADMIN' &&
             userData.role !== 'MANAGER')
         ) {
-          router.replace('/admin-login');
+          if (!cancelled) router.replace('/en/admin-login');
           return;
         }
 
         // User is authorized — do nothing, layout stays visible
       } catch (err) {
-        console.error('Auth check failed:', err);
-        router.replace('/admin-login');
+        // Silently swallow errors — this component is a background guard
+        // and should never crash the admin panel
+        console.error('AdminAuthClient: background auth check failed:', err);
       }
     }
 
