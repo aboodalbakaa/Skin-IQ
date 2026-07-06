@@ -1,20 +1,57 @@
-import { createAdminClient } from '@/utils/supabase/admin';
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
 import ProductTable from '@/components/admin/ProductTable';
+import { getAllProducts } from './actions';
 
-export default async function AdminProducts() {
-  const supabase = createAdminClient();
+export const dynamic = 'force-dynamic';
 
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false });
+export default function AdminProducts() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getAllProducts();
+      setProducts(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto w-full">
+        <div className="grid gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
       <div className="max-w-6xl mx-auto w-full">
-        <div className="p-6 bg-red-50 text-red-600 rounded-2xl border border-red-100">
+        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
           <p className="font-medium">Error loading products</p>
-          <p className="text-sm mt-1 opacity-75">{error.message}</p>
+          <p className="text-sm mt-1 opacity-75">{error}</p>
+          <button
+            onClick={loadProducts}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );

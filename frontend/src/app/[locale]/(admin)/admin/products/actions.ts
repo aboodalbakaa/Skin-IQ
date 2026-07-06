@@ -49,6 +49,19 @@ async function deleteImageFromStorage(imageUrl: string): Promise<void> {
 }
 
 // ─────────────────────────────────────────
+// GET ALL PRODUCTS
+// ─────────────────────────────────────────
+export async function getAllProducts() {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+// ─────────────────────────────────────────
 // CREATE PRODUCT
 // ─────────────────────────────────────────
 export async function createProduct(formData: FormData) {
