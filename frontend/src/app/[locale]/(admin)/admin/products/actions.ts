@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient, getAdminRole } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
  * Uses the 'product-images' bucket.
  */
 async function uploadImageToStorage(file: File): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   // Generate a unique filename
   const ext = file.name.split('.').pop() || 'jpg';
@@ -38,7 +38,7 @@ async function uploadImageToStorage(file: File): Promise<string | null> {
  * Delete an image from Supabase Storage by its public URL.
  */
 async function deleteImageFromStorage(imageUrl: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   // Extract file path from the public URL
   const match = imageUrl.match(/product-images\/(.+)$/);
@@ -52,9 +52,7 @@ async function deleteImageFromStorage(imageUrl: string): Promise<void> {
 // CREATE PRODUCT
 // ─────────────────────────────────────────
 export async function createProduct(formData: FormData) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
@@ -125,9 +123,7 @@ export async function createProduct(formData: FormData) {
 // UPDATE PRODUCT
 // ─────────────────────────────────────────
 export async function updateProduct(formData: FormData) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const id = formData.get('id') as string;
   const name = formData.get('name') as string;
@@ -207,9 +203,7 @@ export async function updateProduct(formData: FormData) {
 // DELETE PRODUCT
 // ─────────────────────────────────────────
 export async function deleteProduct(id: string, imageUrl?: string) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Delete the image from storage if it exists
   if (imageUrl) {
@@ -235,9 +229,7 @@ export async function deleteProduct(id: string, imageUrl?: string) {
 // TOGGLE ACTIVE STATUS
 // ─────────────────────────────────────────
 export async function toggleProductActive(id: string, is_active: boolean) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('products')

@@ -1,24 +1,10 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 export async function updateHeroConfig(config: any) {
-  const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
-
-  // Verify admin role
-  const { data: userData } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!userData || !['ADMIN', 'SUPER_ADMIN'].includes(userData.role)) {
-    return { success: false, error: "Unauthorized" };
-  }
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('site_settings')
@@ -38,12 +24,9 @@ export async function updateHeroConfig(config: any) {
 }
 
 export async function uploadHeroImage(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const file = formData.get('file') as File;
   if (!file) return { success: false, error: "No file provided" };
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
 
   const fileExt = file.name.split('.').pop();
   const fileName = `hero_${Date.now()}.${fileExt}`;

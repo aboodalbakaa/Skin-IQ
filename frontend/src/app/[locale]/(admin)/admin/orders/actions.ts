@@ -1,12 +1,10 @@
 'use server';
 
-import { createClient, getAdminRole } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 export async function updateOrderStatus(orderId: string, status: string) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { success: false, error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('orders')
@@ -19,6 +17,6 @@ export async function updateOrderStatus(orderId: string, status: string) {
   }
 
   revalidatePath('/admin/orders');
-  revalidatePath('/admin'); // Revalidate dashboard too
+  revalidatePath('/admin');
   return { success: true };
 }

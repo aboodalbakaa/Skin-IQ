@@ -1,9 +1,9 @@
 "use server";
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function getDebtMatrixData() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   const { data, error } = await supabase
     .from('orders')
@@ -27,7 +27,7 @@ export async function getDebtMatrixData() {
 }
 
 export async function getSalesSummaryData() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   // Get all paid orders with items and products
   const { data, error } = await supabase
@@ -57,7 +57,7 @@ export async function getSalesSummaryData() {
 }
 
 export async function getPartnerDirectoryData() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   const { data, error } = await supabase
     .from('app_users')
@@ -71,7 +71,7 @@ export async function getPartnerDirectoryData() {
 }
 
 export async function getInventoryAuditData() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   const { data, error } = await supabase
     .from('products')

@@ -1,10 +1,10 @@
 'use server';
 
-import { createClient, getAdminRole } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 async function uploadImageToStorage(file: File): Promise<string | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const ext = file.name.split('.').pop() || 'jpg';
   const fileName = `bundle-${crypto.randomUUID()}.${ext}`;
   const filePath = `products/${fileName}`;
@@ -29,7 +29,7 @@ async function uploadImageToStorage(file: File): Promise<string | null> {
 }
 
 async function deleteImageFromStorage(imageUrl: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const match = imageUrl.match(/product-images\/(.+)$/);
   if (!match) return;
   const filePath = match[1];
@@ -37,9 +37,7 @@ async function deleteImageFromStorage(imageUrl: string): Promise<void> {
 }
 
 export async function createBundleOffer(formData: FormData) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const title_ar = formData.get('title_ar') as string;
   const title_en = formData.get('title_en') as string;
@@ -83,9 +81,7 @@ export async function createBundleOffer(formData: FormData) {
 }
 
 export async function updateBundleOffer(formData: FormData) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const id = formData.get('id') as string;
   const title_ar = formData.get('title_ar') as string;
@@ -135,9 +131,7 @@ export async function updateBundleOffer(formData: FormData) {
 }
 
 export async function deleteBundleOffer(id: string, imageUrl?: string) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   if (imageUrl && imageUrl.includes('supabase.co')) {
     await deleteImageFromStorage(imageUrl);
@@ -156,9 +150,7 @@ export async function deleteBundleOffer(id: string, imageUrl?: string) {
 }
 
 export async function toggleBundleActive(id: string, is_active: boolean) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('bundle_offers')

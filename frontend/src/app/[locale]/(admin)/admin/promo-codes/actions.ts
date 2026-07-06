@@ -1,12 +1,10 @@
 'use server';
 
-import { createClient, getAdminRole } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 export async function createPromoCode(formData: FormData) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const code = formData.get('code') as string;
   const discount = Number(formData.get('discount'));
 
@@ -29,9 +27,7 @@ export async function createPromoCode(formData: FormData) {
 }
 
 export async function togglePromoStatus(id: string, currentStatus: boolean) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from('promo_codes')
     .update({ is_active: !currentStatus })
@@ -43,9 +39,7 @@ export async function togglePromoStatus(id: string, currentStatus: boolean) {
 }
 
 export async function deletePromoCode(id: string) {
-  const auth = await getAdminRole();
-  if (!auth.authorized) return { error: 'Unauthorized' };
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from('promo_codes')
     .delete()

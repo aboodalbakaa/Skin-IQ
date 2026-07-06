@@ -1,36 +1,43 @@
 'use server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
-export async function updateUserRole(userId: string, newRole: string) {
-  const supabase = await createClient();
-  const { data: { user: adminUser } } = await supabase.auth.getUser();
-
-  if (!adminUser) throw new Error('Unauthorized');
-
-  // Verify Admin permissions
-  const { data: adminData } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', adminUser.id)
-    .single();
-
-  if (adminData?.role !== 'SUPER_ADMIN' && adminData?.role !== 'ADMIN') {
-    throw new Error('Unauthorized permissions');
-  }
-
-  // Prevent non-SUPER_ADMIN from promoting to SUPER_ADMIN
-  if (newRole === 'SUPER_ADMIN' && adminData.role !== 'SUPER_ADMIN') {
-    throw new Error('Only Super Admins can assign Super Admin roles');
-  }
+export async function approveWholesaler(userId: string) {
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('app_users')
-    .update({ role: newRole })
+    .update({ role: 'WHOLESALER' })
     .eq('id', userId);
 
-  if (error) throw error;
-  
-  revalidatePath('/[locale]/admin/users', 'page');
+  if (error) return { error: error.message };
+  revalidatePath('/admin/users');
+  return { success: true };
+}
+
+export async function rejectWholesaler(userId: string) {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from('app_users')
+    .update({ role: 'CUSTOMER', business_name: null })
+    .eq('id', userId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/users');
+  return { success: true };
+}
+
+export async function deleteUser(userId: string) {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from('app_users')
+    .delete()
+    .eq('id', userId);
+
+  if (error) return { error: error.message };
+  revalidatePath('/admin/users');
+  return { success: true };
 }
