@@ -51,17 +51,15 @@ export default async function LocaleLayout({
   const dir = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale} dir={dir}>
-      <body className={`${outfit.variable} ${cairo.variable} antialiased min-h-screen flex flex-col ${locale === 'ar' ? 'font-arabic' : ''}`}>
-        <NextIntlClientProvider messages={messages}>
-          <div className="flex-1">
-            {children}
-          </div>
-          <Toaster richColors position="top-right" />
-          <Analytics />
-          <TrafficTracker />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <>
+      <NextIntlClientProvider messages={messages}>
+        <div className={`${outfit.variable} ${cairo.variable} antialiased min-h-screen flex flex-col ${locale === 'ar' ? 'font-arabic' : ''}`} dir={dir}>
+          {children}
+        </div>
+        <Toaster richColors position="top-right" />
+        <Analytics />
+        <TrafficTracker />
+      </NextIntlClientProvider>
+    </>
   );
 }
