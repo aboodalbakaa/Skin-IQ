@@ -37,7 +37,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
     <>
       {/* Mobile Top Header */}
       <div className="sm:hidden fixed top-0 left-0 right-0 h-16 bg-primary text-primary-foreground flex items-center justify-between px-6 z-40 border-b border-white/10 shadow-lg">
-        <Link href="/admin" className="font-bold tracking-[0.2em] uppercase text-sm">
+        <Link href="/admin" prefetch={false} className="font-bold tracking-[0.2em] uppercase text-sm">
           Skin<span className="text-accent italic">IQ</span>
         </Link>
         <button 
@@ -64,7 +64,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
       `}>
         {/* Sidebar Header */}
         <div className="h-24 flex items-center justify-between px-8 border-b border-white/10">
-          <Link href="/admin" className="font-bold text-2xl tracking-[0.2em] text-primary-foreground uppercase group">
+          <Link href="/admin" prefetch={false} className="font-bold text-2xl tracking-[0.2em] text-primary-foreground uppercase group">
             Skin<span className="text-accent font-bold italic">IQ</span>
           </Link>
           <button 
@@ -85,6 +85,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
               <Link 
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 onClick={() => setIsOpen(false)}
                 className={`
                   flex items-center justify-between group px-5 py-4 rounded-2xl text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300
@@ -107,6 +108,7 @@ export default function AdminSidebar({ role }: AdminSidebarProps) {
         <div className="p-6 border-t border-white/10 space-y-4 bg-black/10">
           <Link 
             href="/" 
+            prefetch={false}
             className="flex items-center justify-center gap-3 py-4 w-full border border-white/10 rounded-2xl hover:bg-primary-foreground hover:text-primary transition-all text-[9.5px] font-bold tracking-[0.2em] uppercase"
           >
             <div className="flex items-center gap-2">
