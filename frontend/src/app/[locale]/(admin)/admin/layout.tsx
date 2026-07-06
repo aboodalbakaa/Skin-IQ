@@ -1,26 +1,26 @@
-/**
- * Ultra-minimal admin layout — pure static content.
- * Zero client components, zero data fetching, zero hooks.
- * Just proves whether the admin route itself renders without error.
- */
+'use client';
+
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
+// Load as client-only — no SSR to avoid hydration/RSC issues
+const AdminSidebar = dynamic(() => import('@/components/admin/AdminSidebar'), { ssr: false });
+const AdminAuthClient = dynamic(() => import('@/components/admin/AdminAuthClient'), { ssr: false });
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
-      <aside className="w-72 bg-primary text-primary-foreground p-6">
-        <div className="font-bold text-2xl tracking-[0.2em] uppercase">
-          Skin<span className="text-accent italic">IQ</span>
-        </div>
-        <nav className="mt-10 text-sm opacity-70">
-          Admin Navigation
-        </nav>
-      </aside>
-      <main className="flex-1 p-12">
+    <div className="flex min-h-screen bg-background text-foreground selection:bg-primary/10 transition-colors duration-300">
+      <Suspense fallback={<div className="w-72 bg-primary min-h-screen animate-pulse" />}>
+        <AdminSidebar role="ADMIN" />
+      </Suspense>
+      <main className="flex-1 overflow-x-hidden pt-16 sm:pt-0 p-6 sm:p-12 min-h-screen">
         {children}
       </main>
+      <AdminAuthClient />
     </div>
   );
 }
