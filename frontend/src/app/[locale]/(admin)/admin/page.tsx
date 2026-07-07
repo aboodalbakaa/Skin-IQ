@@ -6,6 +6,7 @@ import DebtReport from '@/components/admin/DebtReport';
 import RecentOrders from '@/components/admin/RecentOrders';
 import TopProducts from '@/components/admin/TopProducts';
 import { LayoutDashboard, TrendingUp } from 'lucide-react';
+import { postAdminJson } from '@/utils/admin-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,23 +39,9 @@ export default function AdminDashboard() {
         setLoading(true);
         setError(null);
 
-        const statsRes = await fetch('/api/admin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getDashboardStats' }),
-        });
-        if (!statsRes.ok) {
-          const errBody = await statsRes.json().catch(() => ({}));
-          throw new Error(errBody.error || `HTTP ${statsRes.status}`);
-        }
-        const statsData = await statsRes.json();
+        const statsData = await postAdminJson<DashboardData>('getDashboardStats');
 
-        const debtRes = await fetch('/api/admin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getDebtReportData' }),
-        });
-        const debtData = debtRes.ok ? await debtRes.json() : [];
+        const debtData = await postAdminJson<any[]>('getDebtReportData').catch(() => []);
 
         if (!cancelled) {
           setData(statsData);

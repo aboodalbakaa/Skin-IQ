@@ -2,7 +2,7 @@
 
 import { useState, useRef, useTransition } from 'react';
 import { X, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { createProduct, updateProduct } from '@/app/[locale]/(admin)/admin/products/actions';
+import { postAdminForm } from '@/utils/admin-api';
 
 export interface Product {
   id: string;
@@ -77,14 +77,11 @@ export default function ProductForm({ product, onClose, onSuccess }: ProductForm
     }
 
     startTransition(async () => {
-      const result = isEditing
-        ? await updateProduct(formData)
-        : await createProduct(formData);
-
-      if (result.error) {
-        setError(result.error);
-      } else {
+      try {
+        await postAdminForm(isEditing ? 'updateProduct' : 'createProduct', formData);
         onSuccess();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save product');
       }
     });
   };

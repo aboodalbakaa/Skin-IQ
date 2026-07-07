@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/utils/supabase/client';
-import { updateHeroConfig, uploadHeroImage } from './actions';
 import { Save, Image as ImageIcon, Layout, Type, Link as LinkIcon, Sparkles, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { postAdminForm, postAdminJson } from '@/utils/admin-api';
 
 export default function HeroSettingsPage() {
   const [config, setConfig] = useState({
@@ -21,17 +20,16 @@ export default function HeroSettingsPage() {
 
   useEffect(() => {
     async function loadConfig() {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'hero_config')
-        .single();
-      
-      if (data?.value) {
-        setConfig(data.value);
+      try {
+        const data = await postAdminJson<typeof config>('getHeroConfig');
+        if (data) {
+          setConfig(prev => ({ ...prev, ...data }));
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to load hero config');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     loadConfig();
   }, []);
@@ -45,9 +43,10 @@ export default function HeroSettingsPage() {
     formData.append('file', file);
 
     try {
-      const res = await uploadHeroImage(formData);
+      const res = await postAdminForm<{ success: boolean; url?: string; error?: string }>('uploadHeroImage', formData);
       if (res.success && res.url) {
-        setConfig(prev => ({ ...prev, bg_image_url: res.url }));
+        const url = res.url;
+        setConfig(prev => ({ ...prev, bg_image_url: url }));
         toast.success(`Background image uploaded!`);
       } else {
         toast.error("Upload failed: " + res.error);
@@ -63,7 +62,7 @@ export default function HeroSettingsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await updateHeroConfig(config);
+      const res = await postAdminJson<{ success: boolean; error?: string }>('updateHeroConfig', { config });
       if (res.success) {
         toast.success("Hero section updated successfully!");
       } else {

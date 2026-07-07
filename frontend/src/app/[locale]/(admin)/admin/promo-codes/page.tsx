@@ -1,46 +1,82 @@
-import { createAdminClient } from '@/utils/supabase/admin';
+'use client';
+
+import { useEffect, useState, useTransition } from 'react';
 import { Ticket, Plus, Trash2, Power, PowerOff } from 'lucide-react';
-import { createPromoCode, togglePromoStatus, deletePromoCode } from './actions';
-import { revalidatePath } from 'next/cache';
 import { PromoCodeDetails } from '@/components/admin/PromoCodeStats';
+import { postAdminForm, postAdminJson } from '@/utils/admin-api';
 
-export default async function PromoCodesPage() {
-  const supabase = createAdminClient();
-  const { data: promoCodes } = await supabase
-    .from('promo_codes')
-    .select('*')
-    .order('created_at', { ascending: false });
+interface PromoStats {
+  id: string;
+  code: string;
+  discount_type: string;
+  discount_value: number;
+  commission_rate: number;
+  is_active: boolean;
+  usageCount: number;
+  revenue: number;
+  partnerProfit: number;
+  orders: any[];
+}
 
-  // Fetch usage stats from orders with user details
-  const { data: orders } = await supabase
-    .from('orders')
-    .select(`
-      promo_code, 
-      total_amount, 
-      id, 
-      created_at, 
-      contact_name,
-      contact_phone,
-      status,
-      app_users (
-        full_name,
-        phone_number,
-        business_name
-      )
-    `)
-    .not('promo_code', 'is', null);
+export default function PromoCodesPage() {
+  const [promoStats, setPromoStats] = useState<PromoStats[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  // Aggregate stats
-  const promoStats = (promoCodes || []).map(promo => {
-    const associatedOrders = (orders || []).filter(o => o.promo_code?.toUpperCase() === promo.code?.toUpperCase());
-    return {
-      ...promo,
-      usageCount: associatedOrders.length,
-      revenue: associatedOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0),
-      partnerProfit: associatedOrders.reduce((sum, o) => sum + ((Number(o.total_amount) || 0) * (Number(promo.commission_rate) || 0) / 100), 0),
-      orders: associatedOrders
-    };
-  });
+  async function loadPromoStats() {
+    try {
+      setError(null);
+      const stats = await postAdminJson<PromoStats[]>('getPromoCodeStats');
+      setPromoStats(stats);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load promo codes');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadPromoStats();
+  }, []);
+
+  const handleCreatePromo = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    startTransition(async () => {
+      try {
+        await postAdminForm('createPromoCode', formData);
+        form.reset();
+        await loadPromoStats();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to create promo code');
+      }
+    });
+  };
+
+  const handleTogglePromo = (promo: PromoStats) => {
+    startTransition(async () => {
+      try {
+        await postAdminJson('togglePromoStatus', { id: promo.id, currentStatus: promo.is_active });
+        await loadPromoStats();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update promo code');
+      }
+    });
+  };
+
+  const handleDeletePromo = (promo: PromoStats) => {
+    startTransition(async () => {
+      try {
+        await postAdminJson('deletePromoCode', { id: promo.id });
+        await loadPromoStats();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to delete promo code');
+      }
+    });
+  };
 
   return (
     <div className="space-y-10">
@@ -62,13 +98,7 @@ export default async function PromoCodesPage() {
               <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">New Code</h2>
             </div>
 
-            <form 
-              action={async (formData) => { 
-                'use server'; 
-                await createPromoCode(formData); 
-              }} 
-              className="space-y-5"
-            >
+            <form onSubmit={handleCreatePromo} className="space-y-5">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600">Code String</label>
                   <input 
@@ -125,11 +155,15 @@ export default async function PromoCodesPage() {
 
               <button 
                 type="submit"
+                disabled={isPending}
                 className="w-full py-5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl font-bold uppercase tracking-[0.2em] text-xs hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-black/10"
               >
                 Create Promo Code
               </button>
             </form>
+            {error && (
+              <p className="mt-4 text-xs font-bold text-red-500">{error}</p>
+            )}
           </div>
         </div>
 
@@ -150,7 +184,7 @@ export default async function PromoCodesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {promoStats?.map((promo) => (
+                {promoStats.map((promo) => (
                   <tr key={promo.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 border-b border-border last:border-0 transition-colors">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
@@ -203,28 +237,28 @@ export default async function PromoCodesPage() {
                     <td className="px-8 py-6">
                       <div className="flex justify-end items-center gap-2">
                         <PromoCodeDetails code={promo.code} orders={promo.orders} commissionRate={promo.commission_rate} />
-                        <form action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
-                          <button 
-                            type="submit"
-                            title={promo.is_active ? "Deactivate" : "Activate"}
-                            className={`p-2 rounded-xl border transition-all ${
-                              promo.is_active 
-                                ? "text-amber-500 border-amber-500/20 hover:bg-amber-50" 
-                                : "text-emerald-500 border-emerald-500/20 hover:bg-emerald-50"
-                            }`}
-                          >
-                            {promo.is_active ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
-                          </button>
-                        </form>
-                        <form action={async () => { 'use server'; await deletePromoCode(promo.id); }}>
-                          <button 
-                            type="submit"
-                            title="Delete"
-                            className="p-2 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-50 transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleTogglePromo(promo)}
+                          title={promo.is_active ? "Deactivate" : "Activate"}
+                          className={`p-2 rounded-xl border transition-all ${
+                            promo.is_active
+                              ? "text-amber-500 border-amber-500/20 hover:bg-amber-50"
+                              : "text-emerald-500 border-emerald-500/20 hover:bg-emerald-50"
+                          }`}
+                        >
+                          {promo.is_active ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => handleDeletePromo(promo)}
+                          title="Delete"
+                          className="p-2 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-50 transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -235,7 +269,7 @@ export default async function PromoCodesPage() {
 
           {/* Mobile Card View */}
           <div className="sm:hidden space-y-4">
-            {promoStats?.map((promo) => (
+            {promoStats.map((promo) => (
               <div key={promo.id} className="glass p-6 rounded-3xl border border-border flex flex-col gap-6">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
@@ -277,32 +311,38 @@ export default async function PromoCodesPage() {
                   <div className="flex-1">
                     <PromoCodeDetails code={promo.code} orders={promo.orders} commissionRate={promo.commission_rate} />
                   </div>
-                  <form className="flex-1" action={async () => { 'use server'; await togglePromoStatus(promo.id, promo.is_active); }}>
-                    <button 
-                      type="submit"
-                      className={`w-full py-4 rounded-2xl border font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 ${
-                        promo.is_active 
-                          ? "text-amber-500 border-amber-500/20 bg-amber-500/5" 
-                          : "text-emerald-500 border-emerald-500/20 bg-emerald-500/5"
-                      }`}
-                    >
-                      {promo.is_active ? <><PowerOff className="w-4 h-4" /> Deactivate</> : <><Power className="w-4 h-4" /> Activate</>}
-                    </button>
-                  </form>
-                  <form action={async () => { 'use server'; await deletePromoCode(promo.id); }}>
-                    <button 
-                      type="submit"
-                      className="p-4 rounded-2xl border border-red-500/20 text-red-500 bg-red-500/5 transition-all"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </form>
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => handleTogglePromo(promo)}
+                    className={`flex-1 py-4 rounded-2xl border font-bold uppercase tracking-widest text-[10px] transition-all flex items-center justify-center gap-2 ${
+                      promo.is_active
+                        ? "text-amber-500 border-amber-500/20 bg-amber-500/5"
+                        : "text-emerald-500 border-emerald-500/20 bg-emerald-500/5"
+                    }`}
+                  >
+                    {promo.is_active ? <><PowerOff className="w-4 h-4" /> Deactivate</> : <><Power className="w-4 h-4" /> Activate</>}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => handleDeletePromo(promo)}
+                    className="p-4 rounded-2xl border border-red-500/20 text-red-500 bg-red-500/5 transition-all"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          {(!promoCodes || promoCodes.length === 0) && (
+          {loading && (
+            <div className="glass p-20 rounded-[2rem] border border-border text-center text-slate-400 italic">
+              Loading promo codes...
+            </div>
+          )}
+
+          {!loading && promoStats.length === 0 && (
             <div className="glass p-20 rounded-[2rem] border border-border text-center text-slate-400 italic">
               No promo codes created yet.
             </div>

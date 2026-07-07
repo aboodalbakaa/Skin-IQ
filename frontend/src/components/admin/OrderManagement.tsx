@@ -17,8 +17,8 @@ import {
   Truck,
   RotateCcw
 } from 'lucide-react';
-import { updateOrderStatus } from '@/app/[locale]/(admin)/admin/orders/actions';
 import { toast } from 'sonner';
+import { postAdminJson } from '@/utils/admin-api';
 
 interface OrderItem {
   id: string;
@@ -68,20 +68,16 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     setUpdatingStatus(orderId);
     try {
-      const res = await updateOrderStatus(orderId, newStatus);
-      if (res.success) {
-        toast.success(`Order status updated to ${newStatus}`);
-        
-        // Update both the list and the selection for immediate sync
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
-        if (selectedOrder && selectedOrder.id === orderId) {
-          setSelectedOrder({ ...selectedOrder, status: newStatus });
-        }
-      } else {
-        toast.error("Failed to update status: " + res.error);
+      await postAdminJson('updateOrderStatus', { orderId, status: newStatus });
+      toast.success(`Order status updated to ${newStatus}`);
+
+      // Update both the list and the selection for immediate sync
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
       }
     } catch (err) {
-      toast.error("An error occurred");
+      toast.error(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setUpdatingStatus(null);
     }

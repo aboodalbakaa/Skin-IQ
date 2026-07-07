@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { X, Upload, Loader2, Save, Image as ImageIcon } from 'lucide-react';
-import { createBundleOffer, updateBundleOffer } from '@/app/[locale]/(admin)/admin/bundle-offers/actions';
 import type { BundleOffer } from './BundleOfferTable';
+import { postAdminForm } from '@/utils/admin-api';
 
 interface BundleOfferFormProps {
   offer: BundleOffer | null;
@@ -27,14 +27,11 @@ export default function BundleOfferForm({ offer, onClose, onSuccess }: BundleOff
     }
 
     startTransition(async () => {
-      const result = offer 
-        ? await updateBundleOffer(formData)
-        : await createBundleOffer(formData);
-
-      if (result.error) {
-        setError(result.error);
-      } else {
+      try {
+        await postAdminForm(offer ? 'updateBundleOffer' : 'createBundleOffer', formData);
         onSuccess();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save bundle offer');
       }
     });
   };

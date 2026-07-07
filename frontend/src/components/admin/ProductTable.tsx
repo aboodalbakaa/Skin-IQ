@@ -2,16 +2,15 @@
 
 import { useState, useTransition } from 'react';
 import { Pencil, Trash2, Eye, EyeOff, Plus, Search, Package, Loader2, AlertTriangle, PackageX } from 'lucide-react';
-import { deleteProduct, toggleProductActive } from '@/app/[locale]/(admin)/admin/products/actions';
 import ProductForm, { type Product } from './ProductForm';
-import { useRouter } from 'next/navigation';
+import { postAdminJson } from '@/utils/admin-api';
 
 interface ProductTableProps {
   products: Product[];
+  onProductsChanged: () => Promise<void>;
 }
 
-export default function ProductTable({ products }: ProductTableProps) {
-  const router = useRouter();
+export default function ProductTable({ products, onProductsChanged }: ProductTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -36,17 +35,20 @@ export default function ProductTable({ products }: ProductTableProps) {
   const handleDelete = async (product: Product) => {
     setDeletingId(product.id);
     startTransition(async () => {
-      await deleteProduct(product.id, product.image_url);
-      setConfirmDelete(null);
-      setDeletingId(null);
-      router.refresh();
+      try {
+        await postAdminJson('deleteProduct', { id: product.id, imageUrl: product.image_url });
+        setConfirmDelete(null);
+        await onProductsChanged();
+      } finally {
+        setDeletingId(null);
+      }
     });
   };
 
   const handleToggleActive = (product: Product) => {
     startTransition(async () => {
-      await toggleProductActive(product.id, !product.is_active);
-      router.refresh();
+      await postAdminJson('toggleProductActive', { id: product.id, is_active: !product.is_active });
+      await onProductsChanged();
     });
   };
 
@@ -58,7 +60,7 @@ export default function ProductTable({ products }: ProductTableProps) {
   const handleSuccess = () => {
     setShowForm(false);
     setEditingProduct(null);
-    router.refresh();
+    onProductsChanged();
   };
 
   return (

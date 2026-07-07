@@ -5,12 +5,7 @@ import {
   FileText, Download, BarChart3, TrendingUp, Users, 
   Eye, X, Loader2, Table as TableIcon, FileSpreadsheet
 } from 'lucide-react';
-import { 
-  getDebtMatrixData, 
-  getSalesSummaryData, 
-  getPartnerDirectoryData, 
-  getInventoryAuditData 
-} from '@/app/[locale]/(admin)/admin/reports/actions';
+import { postAdminJson } from '@/utils/admin-api';
 
 interface Report {
   id: string;
@@ -35,7 +30,7 @@ export default function ReportManager() {
       description: 'Comprehensive list of wholesale partners with outstanding balances and contact info.',
       icon: BarChart3,
       color: 'red',
-      fetcher: getDebtMatrixData,
+      fetcher: () => postAdminJson<any[]>('getDebtMatrixData'),
       columns: ['Date', 'Partner', 'Business', 'Phone', 'Amount (IQD)'],
       mapping: (data) => data.map(item => [
         new Date(item.created_at).toLocaleDateString(),
@@ -51,7 +46,7 @@ export default function ReportManager() {
       description: 'Revenue breakdown by product and customer type. Useful for campaign auditing.',
       icon: TrendingUp,
       color: 'emerald',
-      fetcher: getSalesSummaryData,
+      fetcher: () => postAdminJson<any[]>('getSalesSummaryData'),
       columns: ['Date', 'Order ID', 'Type', 'Business', 'Revenue (IQD)'],
       mapping: (data) => data.map(item => [
         new Date(item.created_at).toLocaleDateString(),
@@ -67,7 +62,7 @@ export default function ReportManager() {
       description: 'Full database of registered partners with approval status and registration dates.',
       icon: Users,
       color: 'blue',
-      fetcher: getPartnerDirectoryData,
+      fetcher: () => postAdminJson<any[]>('getPartnerDirectoryData'),
       columns: ['Joined', 'Name', 'Email', 'Business', 'Role'],
       mapping: (data) => data.map(item => [
         new Date(item.created_at).toLocaleDateString(),
@@ -83,7 +78,7 @@ export default function ReportManager() {
       description: 'Stock levels vs pricing consistency check. Helps ensure wholesale accuracy.',
       icon: FileText,
       color: 'amber',
-      fetcher: getInventoryAuditData,
+      fetcher: () => postAdminJson<any[]>('getInventoryAuditData'),
       columns: ['Product', 'Stock Status', 'Retail Price', 'Wholesale Price', 'Status'],
       mapping: (data) => data.map(item => [
         item.name,

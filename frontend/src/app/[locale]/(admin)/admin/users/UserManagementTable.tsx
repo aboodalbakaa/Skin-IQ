@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { User, Search, Shield, MoreHorizontal, CheckCircle } from 'lucide-react';
-import { Link } from '@/i18n/routing';
-import { updateUserRole } from './actions';
+import { postAdminJson } from '@/utils/admin-api';
 
 interface AppUser {
   id: string;
@@ -15,10 +14,11 @@ interface AppUser {
 }
 
 export default function UserManagementTable({ initialUsers, filter }: { initialUsers: AppUser[], filter?: string }) {
+  const [users, setUsers] = useState(initialUsers);
   const [search, setSearch] = useState('');
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  const filteredUsers = initialUsers.filter(u => {
+  const filteredUsers = users.filter(u => {
     const matchesSearch = u.full_name?.toLowerCase().includes(search.toLowerCase()) || 
       u.email?.toLowerCase().includes(search.toLowerCase()) ||
       u.business_name?.toLowerCase().includes(search.toLowerCase());
@@ -35,7 +35,8 @@ export default function UserManagementTable({ initialUsers, filter }: { initialU
   const handleRoleChange = async (userId: string, newRole: string) => {
     setLoadingId(userId);
     try {
-      await updateUserRole(userId, newRole);
+      await postAdminJson('updateUserRole', { userId, role: newRole });
+      setUsers(prev => prev.map(user => user.id === userId ? { ...user, role: newRole } : user));
     } catch (err) {
       alert('Failed to update role. Ensure you have Super Admin permissions for this action.');
     } finally {
@@ -62,9 +63,9 @@ export default function UserManagementTable({ initialUsers, filter }: { initialU
           <div className="flex items-center gap-3 px-6 py-3 bg-primary/10 border border-primary/20 rounded-2xl animate-in fade-in slide-in-from-right-4 duration-500">
              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
              <span className="text-xs font-black text-primary uppercase tracking-widest">Showing Pending Only</span>
-             <Link href="/admin/users" className="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-[0.2em] ml-2 border-l border-primary/20 pl-4">
+             <a href="/en/admin/users" className="text-[10px] font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-[0.2em] ml-2 border-l border-primary/20 pl-4">
                Clear Filter
-             </Link>
+             </a>
           </div>
         )}
       </div>

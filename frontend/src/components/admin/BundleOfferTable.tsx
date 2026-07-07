@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { Pencil, Trash2, Eye, EyeOff, Plus, Search, Package, Loader2, AlertTriangle, Flame } from 'lucide-react';
-import { deleteBundleOffer, toggleBundleActive } from '@/app/[locale]/(admin)/admin/bundle-offers/actions';
 import BundleOfferForm from './BundleOfferForm';
 import { useRouter } from 'next/navigation';
+import { postAdminJson } from '@/utils/admin-api';
 
 export interface BundleOffer {
   id: string;
@@ -50,16 +50,19 @@ export default function BundleOfferTable({ offers }: BundleOfferTableProps) {
   const handleDelete = async (offer: BundleOffer) => {
     setDeletingId(offer.id);
     startTransition(async () => {
-      await deleteBundleOffer(offer.id, offer.image_url);
-      setConfirmDelete(null);
-      setDeletingId(null);
-      router.refresh();
+      try {
+        await postAdminJson('deleteBundleOffer', { id: offer.id, imageUrl: offer.image_url });
+        setConfirmDelete(null);
+        router.refresh();
+      } finally {
+        setDeletingId(null);
+      }
     });
   };
 
   const handleToggleActive = (offer: BundleOffer) => {
     startTransition(async () => {
-      await toggleBundleActive(offer.id, !offer.is_active);
+      await postAdminJson('toggleBundleActive', { id: offer.id, is_active: !offer.is_active });
       router.refresh();
     });
   };
