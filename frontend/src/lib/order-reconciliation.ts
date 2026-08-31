@@ -546,7 +546,7 @@ async function loadPendingOrderNotification(supabase: AdminClient, orderId: stri
       .eq('id', orderId)
       .single(),
     supabase.from('order_items')
-      .select('id, product_id, bundle_offer_id, quantity, unit_price')
+      .select('id, order_id, product_id, bundle_offer_id, quantity, unit_price')
       .eq('order_id', orderId),
   ]);
   if (orderError || !order) throw new Error(`Could not load order ${orderId}: ${orderError?.message}`);
