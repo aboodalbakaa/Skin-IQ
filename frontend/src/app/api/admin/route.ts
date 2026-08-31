@@ -5,15 +5,6 @@ import {
   calculateOrderBreakdown,
   sumPricedLines,
 } from '@/lib/order-pricing';
-import {
-  applyOrderReconciliation,
-  buildReconciliationManifest,
-  getCorrectionNotificationStatus,
-  sendCorrectedPendingOrderNotification,
-} from '@/lib/order-reconciliation';
-import { BATCH_ID } from '@/lib/reconciliation-batch';
-
-export const maxDuration = 300;
 
 type AdminSupabaseClient = ReturnType<typeof createAdminClient>;
 
@@ -717,45 +708,6 @@ export async function POST(request: NextRequest) {
         if (!isFile(file)) return jsonError('No file provided', 400);
         const url = await uploadImageToStorage(supabase, 'site-assets', 'hero', file);
         return NextResponse.json({ success: true, url });
-      }
-
-      case 'previewOrderReconciliation': {
-        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
-        const manifest = await buildReconciliationManifest(supabase);
-        return NextResponse.json({
-          batchId: manifest.batchId,
-          manifestHash: manifest.manifestHash,
-          summary: manifest.summary,
-          warnings: manifest.warnings,
-        });
-      }
-
-      case 'applyOrderReconciliation': {
-        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
-        if (data.confirm !== BATCH_ID || typeof data.manifestHash !== 'string') {
-          return jsonError('Exact batch confirmation and manifest hash are required', 400);
-        }
-        return NextResponse.json(await applyOrderReconciliation(
-          supabase,
-          data.manifestHash,
-          admin.user.id,
-        ));
-      }
-
-      case 'getCorrectionNotificationStatus': {
-        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
-        return NextResponse.json(await getCorrectionNotificationStatus(supabase));
-      }
-
-      case 'sendCorrectedPendingOrderNotification': {
-        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
-        const orderId = asString(data.orderId);
-        if (!orderId) return jsonError('Order ID is required', 400);
-        return NextResponse.json(await sendCorrectedPendingOrderNotification(
-          supabase,
-          orderId,
-          admin.user.id,
-        ));
       }
 
       default:
