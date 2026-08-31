@@ -223,7 +223,9 @@ export async function submitSpotOrder({
       const notificationItems = orderItemsData.map((pricedItem) => {
         const name = pricedItem.bundle_offer_id
           ? bundleMap.get(pricedItem.bundle_offer_id)?.title_ar || 'عرض'
-          : productMap.get(pricedItem.product_id)?.name || 'منتج';
+          : pricedItem.product_id
+            ? productMap.get(pricedItem.product_id)?.name || 'منتج'
+            : 'منتج';
 
         return {
           name,

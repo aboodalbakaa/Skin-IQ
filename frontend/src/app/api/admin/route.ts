@@ -40,8 +40,10 @@ function isFile(value: FormDataEntryValue | unknown): value is File {
   return typeof File !== 'undefined' && value instanceof File && value.size > 0;
 }
 
-function withOrderBreakdown<T extends Record<string, any>>(order: T) {
-  const items = Array.isArray(order.order_items) ? order.order_items : [];
+function withOrderBreakdown<T extends Record<string, unknown>>(order: T) {
+  const items = Array.isArray(order.order_items)
+    ? order.order_items as Array<{ quantity: number; unit_price: number | string }>
+    : [];
   const itemsSubtotal = sumPricedLines(items);
   const breakdown = calculateOrderBreakdown(itemsSubtotal, Number(order.discount_amount || 0));
   return {

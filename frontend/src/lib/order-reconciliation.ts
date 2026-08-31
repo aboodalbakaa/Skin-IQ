@@ -3,9 +3,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   ALL_ORDER_IDS,
   BATCH_ID,
+  CUTOFF_ISO,
   EXPECTED_ALL_ORDER_IDS_SHA256,
   EXPECTED_ALL_ORDER_COUNT,
   EXPECTED_ORDER_ITEM_COUNT,
+  EXPECTED_ORDER_ITEM_SHAPE_SHA256,
   EXPECTED_PENDING_ORDER_IDS_SHA256,
   EXPECTED_PENDING_ORDER_COUNT,
   PENDING_ORDER_IDS,
@@ -286,6 +288,12 @@ export async function buildReconciliationManifest(
   if (rows.items.length !== EXPECTED_ORDER_ITEM_COUNT) {
     throw new Error(`Frozen item scope mismatch: expected ${EXPECTED_ORDER_ITEM_COUNT}, found ${rows.items.length}.`);
   }
+  if (rows.orders.some((order) => Date.parse(order.created_at) > Date.parse(CUTOFF_ISO))) {
+    throw new Error('An order in the frozen scope is newer than the recorded cutoff.');
+  }
+  if (rows.items.some((item) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) <= 0)) {
+    throw new Error('Frozen order items contain a non-positive or non-integer quantity.');
+  }
 
   const currentPendingIds = rows.orders
     .filter((order) => order.status === 'PENDING' && pendingOrderIdSet.has(order.id))
@@ -299,6 +307,17 @@ export async function buildReconciliationManifest(
   const bundleMap = new Map(rows.bundles.map((bundle) => [bundle.id, bundle]));
   const promoMap = new Map(rows.promos.map((promo) => [promo.code.toUpperCase(), promo]));
   const roleMap = new Map(rows.profiles.map((profile) => [profile.id, profile.role]));
+  const itemShapeRows = rows.items
+    .map((item) => ({
+      id: item.id,
+      orderId: item.order_id,
+      quantity: Number(item.quantity),
+      productName: item.product_id ? productMap.get(item.product_id)?.name || null : null,
+    }))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  if (await sha256(JSON.stringify(itemShapeRows)) !== EXPECTED_ORDER_ITEM_SHAPE_SHA256) {
+    throw new Error('Frozen order-item identities, quantities, or product references changed. Re-audit before continuing.');
+  }
   const itemsByOrder = new Map<string, RawOrderItem[]>();
 
   rows.items.forEach((item) => {
@@ -449,7 +468,7 @@ export async function applyOrderReconciliation(
   expectedManifestHash: string,
   actorId: string,
 ) {
-  const before = await buildReconciliationManifest(supabase);
+  let before = await buildReconciliationManifest(supabase);
   if (before.manifestHash !== expectedManifestHash) {
     throw new Error('Reconciliation data changed after preview. Refresh and review the new manifest.');
   }
@@ -457,28 +476,46 @@ export async function applyOrderReconciliation(
     throw new Error(`Found ${before.summary.paymentRecordCount} payment ledger records. Reconcile those records before changing order balances.`);
   }
 
-  const backupPath = `${BATCH_ID}/backups/${new Date().toISOString().replaceAll(':', '-')}.json`;
-  await uploadJson(supabase, backupPath, {
-    batchId: BATCH_ID,
-    actorId,
-    createdAt: new Date().toISOString(),
-    manifest: before,
-  }, false);
+  const applyLockPath = `${BATCH_ID}/apply-lock.json`;
   const applyResultPath = `${BATCH_ID}/apply-result.json`;
-  await uploadJson(supabase, applyResultPath, {
+  await uploadJson(supabase, applyLockPath, {
     batchId: BATCH_ID,
-    status: 'applying',
     actorId,
-    startedAt: new Date().toISOString(),
-    backupPath,
-  }, true);
+    expectedManifestHash,
+    acquiredAt: new Date().toISOString(),
+  }, false);
 
-  const changedItems = before.orders.flatMap((order) => order.items)
-    .filter((item) => item.oldUnitPrice !== item.newUnitPrice);
+  let backupPath = 'not-created';
   const appliedItems: ReconciliationItem[] = [];
   const appliedOrders: ReconciliationOrder[] = [];
 
   try {
+    const lockedBefore = await buildReconciliationManifest(supabase);
+    if (lockedBefore.manifestHash !== expectedManifestHash) {
+      throw new Error('Reconciliation data changed while acquiring the operation lock.');
+    }
+    if (lockedBefore.summary.paymentRecordCount > 0) {
+      throw new Error(`Found ${lockedBefore.summary.paymentRecordCount} payment ledger records after locking.`);
+    }
+    before = lockedBefore;
+
+    backupPath = `${BATCH_ID}/backups/${new Date().toISOString().replaceAll(':', '-')}.json`;
+    await uploadJson(supabase, backupPath, {
+      batchId: BATCH_ID,
+      actorId,
+      createdAt: new Date().toISOString(),
+      manifest: before,
+    }, false);
+    await uploadJson(supabase, applyResultPath, {
+      batchId: BATCH_ID,
+      status: 'applying',
+      actorId,
+      startedAt: new Date().toISOString(),
+      backupPath,
+    }, true);
+
+    const changedItems = before.orders.flatMap((order) => order.items)
+      .filter((item) => item.oldUnitPrice !== item.newUnitPrice);
     await runInBatches(changedItems, 10, async (item) => {
       const { data, error } = await supabase.from('order_items')
         .update({ unit_price: item.newUnitPrice })
@@ -566,7 +603,9 @@ export async function applyOrderReconciliation(
       error: applyError instanceof Error ? applyError.message : String(applyError),
       rollbackComplete: true,
     }, true).catch(() => undefined);
-    throw new Error(`Apply failed; all completed changes were rolled back. Backup: ${backupPath}. ${applyError instanceof Error ? applyError.message : String(applyError)}`);
+    const { error: unlockError } = await supabase.storage.from(AUDIT_BUCKET).remove([applyLockPath]);
+    const unlockMessage = unlockError ? ` The failed-operation lock was retained: ${unlockError.message}.` : '';
+    throw new Error(`Apply failed; all completed changes were rolled back. Backup: ${backupPath}. ${applyError instanceof Error ? applyError.message : String(applyError)}${unlockMessage}`);
   }
 }
 
@@ -602,15 +641,30 @@ async function loadPendingOrderNotification(supabase: AdminClient, orderId: stri
     throw new Error(`Could not resolve order item names for ${orderId}.`);
   }
 
-  const productNames = new Map((productsResult.data || []).map((product: any) => [product.id, product.name]));
-  const bundleNames = new Map((bundlesResult.data || []).map((bundle: any) => [bundle.id, bundle.title_ar]));
-  const notificationItems = (items as RawOrderItem[]).map((item) => ({
-    name: item.product_id
-      ? productNames.get(item.product_id) || 'منتج'
-      : bundleNames.get(item.bundle_offer_id || '') || 'عرض',
-    quantity: item.quantity,
-    unitPrice: toIqd(item.unit_price),
-  }));
+  const productNames = new Map<string, string | null>(
+    ((productsResult.data || []) as Array<{ id: string; name: string | null }>)
+      .map((product) => [product.id, product.name]),
+  );
+  const bundleNames = new Map<string, string | null>(
+    ((bundlesResult.data || []) as Array<{ id: string; title_ar: string | null }>)
+      .map((bundle) => [bundle.id, bundle.title_ar]),
+  );
+  const notificationItems = (items as RawOrderItem[]).map((item) => {
+    if (!Number.isInteger(Number(item.quantity)) || Number(item.quantity) <= 0) {
+      throw new Error(`Order ${orderId} contains an invalid quantity for item ${item.id}.`);
+    }
+    const name = item.product_id
+      ? productNames.get(item.product_id)
+      : bundleNames.get(item.bundle_offer_id || '');
+    if (!name?.trim()) {
+      throw new Error(`Order ${orderId} contains an item whose fulfilment name cannot be resolved.`);
+    }
+    return {
+      name,
+      quantity: item.quantity,
+      unitPrice: toIqd(item.unit_price),
+    };
+  });
   const itemsSubtotal = sumPricedLines((items as RawOrderItem[]));
   const breakdown = calculateOrderBreakdown(itemsSubtotal, Number(order.discount_amount || 0));
 

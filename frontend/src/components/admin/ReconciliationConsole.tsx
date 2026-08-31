@@ -23,10 +23,14 @@ interface TelegramStatus {
   nextOrderId: string | null;
 }
 
+interface ApplyResult {
+  backupPath: string;
+}
+
 export default function ReconciliationConsole() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [confirmation, setConfirmation] = useState('');
-  const [applyResult, setApplyResult] = useState<any>(null);
+  const [applyResult, setApplyResult] = useState<ApplyResult | null>(null);
   const [telegramStatus, setTelegramStatus] = useState<TelegramStatus | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -47,7 +51,7 @@ export default function ReconciliationConsole() {
     if (!preview || confirmation !== BATCH_ID) return;
     setBusy('apply');
     try {
-      const result = await postAdminJson('applyOrderReconciliation', {
+      const result = await postAdminJson<ApplyResult>('applyOrderReconciliation', {
         confirm: confirmation,
         manifestHash: preview.manifestHash,
       });
