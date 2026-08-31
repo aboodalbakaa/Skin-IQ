@@ -5,6 +5,7 @@ import { useCartStore } from '@/store/cartStore';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ChevronLeft } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
+import { DELIVERY_FEE_IQD } from '@/lib/order-pricing';
 
 export default function CartPage() {
   const t = useTranslations('Cart');
@@ -19,6 +20,7 @@ export default function CartPage() {
   if (!mounted) return <div className="min-h-screen bg-background" />;
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const grandTotal = subtotal + DELIVERY_FEE_IQD;
 
   if (items.length === 0) {
     return (
@@ -142,14 +144,14 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground dark:text-slate-200 font-medium">{tCommon('delivery') || 'Delivery'}</span>
-                  <span className="text-emerald-500 font-bold uppercase tracking-widest text-[10px] bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">Calculated at Checkout</span>
+                  <span className="text-emerald-500 font-bold tracking-widest text-xs bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">{DELIVERY_FEE_IQD.toLocaleString()} {tCommon('iqd')}</span>
                 </div>
                 
                 <div className="pt-6 border-t border-border">
                   <div className="flex justify-between items-end mb-1">
                     <span className="text-xs uppercase text-muted-foreground dark:text-slate-300 font-bold tracking-tighter">{t('total') || 'Estimated Total'}</span>
                     <span className="text-3xl font-bold text-primary dark:text-accent">
-                      {subtotal.toLocaleString()} <span className="text-xs">{tCommon('iqd')}</span>
+                      {grandTotal.toLocaleString()} <span className="text-xs">{tCommon('iqd')}</span>
                     </span>
                   </div>
                   <p className="text-[10px] text-muted-foreground text-right italic">VAT included where applicable</p>

@@ -5,6 +5,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { Heart, Plus } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { resolveProductUnitPrice } from '@/lib/order-pricing';
 
 interface Product {
   id: string;
@@ -50,12 +51,10 @@ export default function ProductGrid({ products, userRole }: ProductGridProps) {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 gap-y-8 sm:gap-y-12">
         {products.map((product) => {
-          const finalPrice = isWholesale 
-            ? (product.discount_wholesale_price || product.wholesale_price)
-            : (product.discount_retail_price || product.retail_price);
-          
-          const referencePrice = isWholesale ? product.retail_price : product.retail_price;
-          const hasReference = isWholesale || (isWholesale ? !!product.discount_wholesale_price : !!product.discount_retail_price);
+          const tier = isWholesale ? 'WHOLESALE' : 'RETAIL';
+          const finalPrice = resolveProductUnitPrice(product, tier);
+          const referencePrice = isWholesale ? product.wholesale_price : product.retail_price;
+          const hasReference = finalPrice < Number(referencePrice);
 
           return (
             <div key={product.id} className="group flex flex-col interactive-hover relative">

@@ -7,6 +7,10 @@ import { submitSpotOrder } from './actions';
 import { Loader2, CheckCircle2, ChevronRight, ShoppingBag, MapPin, Ticket, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { createClient } from '@/utils/supabase/client';
+import {
+  calculateOrderBreakdown,
+  calculatePromoDiscount,
+} from '@/lib/order-pricing';
 
 export default function CheckoutPage() {
   const t = useTranslations('Checkout');
@@ -16,6 +20,7 @@ export default function CheckoutPage() {
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [promoCode, setPromoCode] = useState('');
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string | null>(null);
   const [promoType, setPromoType] = useState<'percentage' | 'fixed' | null>(null);
   const [promoValue, setPromoValue] = useState(0);
   const [promoError, setPromoError] = useState<string | null>(null);
@@ -25,13 +30,12 @@ export default function CheckoutPage() {
 
   const cartTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   
-  const discountAmount = promoType === 'percentage' 
-    ? (cartTotal * promoValue) / 100 
-    : promoType === 'fixed' 
-      ? promoValue 
-      : 0;
-      
-  const finalTotal = Math.max(0, cartTotal - discountAmount);
+  const discountAmount = calculatePromoDiscount(
+    cartTotal,
+    promoType ? { discount_type: promoType, discount_value: promoValue } : null,
+  );
+  const breakdown = calculateOrderBreakdown(cartTotal, discountAmount);
+  const finalTotal = breakdown.grandTotal;
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -73,9 +77,11 @@ export default function CheckoutPage() {
         setPromoError(t('promo_invalid'));
         setPromoType(null);
         setPromoValue(0);
+        setAppliedPromoCode(null);
       } else {
         setPromoType(data.discount_type);
         setPromoValue(Number(data.discount_value));
+        setAppliedPromoCode(promoCode.toUpperCase());
         setPromoError(null);
       }
     } catch (err) {
@@ -101,7 +107,7 @@ export default function CheckoutPage() {
         contact_phone,
         address,
         google_maps_link: googleMapsLink,
-        promo_code: promoType ? promoCode.toUpperCase() : null,
+        promo_code: promoType ? appliedPromoCode : null,
         items: items.map(i => ({ id: i.id, quantity: i.quantity }))
       });
 
@@ -289,7 +295,13 @@ export default function CheckoutPage() {
                       <input 
                         type="text" 
                         value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
+                        onChange={(e) => {
+                          setPromoCode(e.target.value);
+                          setPromoType(null);
+                          setPromoValue(0);
+                          setAppliedPromoCode(null);
+                          setPromoError(null);
+                        }}
                         placeholder={t('promo_placeholder')}
                         className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold tracking-widest focus:outline-none focus:border-primary uppercase transition-all"
                       />
@@ -318,7 +330,7 @@ export default function CheckoutPage() {
                 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground dark:text-slate-200 font-medium">{t('delivery')}</span>
-                  <span className="text-emerald-500 font-bold uppercase tracking-widest text-[10px] bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">{t('delivery_calculated')}</span>
+                  <span className="text-emerald-500 font-bold tracking-widest text-xs bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-md">IQD {breakdown.deliveryFee.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-end mb-1">
                   <span className="text-xs uppercase text-muted-foreground dark:text-slate-300 font-bold tracking-tighter">{t('estimated_total')}</span>

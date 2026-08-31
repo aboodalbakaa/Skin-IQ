@@ -6,6 +6,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useFavoritesStore } from '@/store/favoritesStore';
 import { ShoppingBag, Star, ChevronRight, ChevronLeft, ArrowRight, Plus, Heart } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import { resolveProductUnitPrice } from '@/lib/order-pricing';
 
 interface Product {
   id: string;
@@ -106,12 +107,12 @@ export default function ProductShowcase({ products, userRole }: ProductShowcaseP
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product, index) => {
-          const finalPrice = isWholesale 
-            ? (product.discount_wholesale_price || product.wholesale_price) 
-            : (product.discount_retail_price || product.retail_price);
-          
+          const finalPrice = resolveProductUnitPrice(
+            product,
+            isWholesale ? 'WHOLESALE' : 'RETAIL',
+          );
           const originalPrice = isWholesale ? product.wholesale_price : product.retail_price;
-          const hasDiscount = isWholesale ? !!product.discount_wholesale_price : !!product.discount_retail_price;
+          const hasDiscount = finalPrice < Number(originalPrice);
 
           return (
             <div 

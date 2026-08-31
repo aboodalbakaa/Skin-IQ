@@ -1,10 +1,22 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
-import { ShoppingBag, ChevronRight, Clock, CheckCircle, AlertCircle, XCircle, Truck, RotateCcw } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Clock, CheckCircle, AlertCircle, Truck, RotateCcw } from 'lucide-react';
+import { DELIVERY_FEE_IQD } from '@/lib/order-pricing';
 
 interface RecentOrdersProps {
-  orders: any[];
+  orders: Array<{
+    id: string;
+    status: string;
+    total_amount: number;
+    products_total?: number | null;
+    delivery_fee?: number | null;
+    contact_name?: string | null;
+    app_users?: {
+      full_name?: string | null;
+      business_name?: string | null;
+    } | null;
+  }>;
 }
 
 const statusConfig: any = {
@@ -40,7 +52,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
               <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Order ID</th>
               <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Customer</th>
               <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-center">Status</th>
-              <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Amount</th>
+              <th className="px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Payment Breakdown</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -50,6 +62,11 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                 const StatusIcon = status.icon;
                 const customerName = order.app_users?.full_name || order.contact_name || 'Guest';
                 const business = order.app_users?.business_name;
+                const deliveryFee = Number(order.delivery_fee ?? DELIVERY_FEE_IQD);
+                const grandTotal = Number(order.total_amount || 0);
+                const productsTotal = order.products_total == null
+                  ? Math.max(0, grandTotal - deliveryFee)
+                  : Number(order.products_total);
 
                 return (
                   <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
@@ -73,8 +90,21 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                         {order.status.replace('_', ' ')}
                       </div>
                     </td>
-                    <td className="px-8 py-5 text-right font-black text-slate-900 dark:text-white tabular-nums">
-                      {formatCurrency(order.total_amount)}
+                    <td className="px-8 py-5 text-right tabular-nums min-w-48">
+                      <div className="space-y-1 text-[10px]">
+                        <div className="flex justify-end gap-3 text-slate-400">
+                          <span>Products</span>
+                          <span className="font-bold text-slate-600 dark:text-slate-300">{formatCurrency(productsTotal)}</span>
+                        </div>
+                        <div className="flex justify-end gap-3 text-slate-400">
+                          <span>Delivery</span>
+                          <span className="font-bold text-slate-600 dark:text-slate-300">{formatCurrency(deliveryFee)}</span>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-1 border-t border-border font-black text-slate-900 dark:text-white">
+                          <span>Grand</span>
+                          <span>{formatCurrency(grandTotal)}</span>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 );

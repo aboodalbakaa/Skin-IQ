@@ -8,6 +8,8 @@ interface Order {
   id: string;
   created_at: string;
   total_amount: number;
+  products_total?: number;
+  delivery_fee?: number;
   contact_name: string | null;
   contact_phone: string | null;
   status: string;
@@ -26,7 +28,7 @@ interface PromoCodeStatsProps {
 
 export function PromoCodeDetails({ code, orders, commissionRate }: PromoCodeStatsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const totalRevenue = orders.reduce((s, o) => s + Number(o.total_amount), 0);
+  const totalRevenue = orders.reduce((s, o) => s + Number(o.products_total || 0), 0);
   const totalProfit = (totalRevenue * (commissionRate || 0)) / 100;
 
   const getStatusColor = (status: string) => {

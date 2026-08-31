@@ -2,6 +2,14 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import {
+  calculateOrderBreakdown,
+  calculatePromoDiscount,
+  resolveProductUnitPrice,
+  toIqd,
+  type PricingTier,
+} from '@/lib/order-pricing';
+import { buildArabicOrderNotification } from '@/lib/order-notification';
 
 interface CheckoutItem {
   id: string;
@@ -29,6 +37,16 @@ export async function submitSpotOrder({
   const authClient = await createClient();
   const { data: { user } } = await authClient.auth.getUser();
   const userId = (user && user.id && user.id !== 'undefined') ? user.id : null;
+  let pricingTier: PricingTier = 'RETAIL';
+
+  if (userId) {
+    const { data: profile } = await supabase
+      .from('app_users')
+      .select('role')
+      .eq('id', userId)
+      .single();
+    if (profile?.role === 'WHOLESALE') pricingTier = 'WHOLESALE';
+  }
 
   // ── STEP 1: Fetch ACTUAL prices from DB (ignore client-sent prices) ──
   const productIds = items.filter(i => !i.id.startsWith('bundle-')).map(i => i.id);
@@ -36,7 +54,7 @@ export async function submitSpotOrder({
 
   const [productsResult, bundlesResult] = await Promise.all([
     productIds.length > 0
-      ? supabase.from('products').select('id, name, retail_price, wholesale_price, is_active, is_out_of_stock').in('id', productIds)
+      ? supabase.from('products').select('id, name, retail_price, wholesale_price, discount_retail_price, discount_wholesale_price, is_active, is_out_of_stock').in('id', productIds)
       : { data: [] },
     bundleIds.length > 0
       ? supabase.from('bundle_offers').select('id, title_ar, bundle_price, is_active').in('id', bundleIds)
@@ -50,20 +68,23 @@ export async function submitSpotOrder({
   const bundleMap = new Map(bundles.map(b => [b.id, b]));
 
   // ── STEP 2: Validate items exist, are active, and in stock ──
-  let computedTotal = 0;
+  let itemsSubtotal = 0;
   const orderItemsData: any[] = [];
 
   for (const item of items) {
     const isBundle = item.id.startsWith('bundle-');
     const actualId = isBundle ? item.id.replace('bundle-', '') : item.id;
-    const qty = Math.max(1, Math.min(99, Math.floor(item.quantity))); // sanitize quantity
+    const requestedQuantity = Number(item.quantity);
+    const qty = Number.isFinite(requestedQuantity)
+      ? Math.max(1, Math.min(99, Math.floor(requestedQuantity)))
+      : 1;
 
     if (isBundle) {
       const bundle = bundleMap.get(actualId);
       if (!bundle || !bundle.is_active) {
         return { error: `Bundle offer not found or inactive.` };
       }
-      const unitPrice = Number(bundle.bundle_price);
+      const unitPrice = toIqd(bundle.bundle_price);
       orderItemsData.push({
         order_id: '', // set after order creation
         product_id: null,
@@ -71,7 +92,7 @@ export async function submitSpotOrder({
         quantity: qty,
         unit_price: unitPrice,
       });
-      computedTotal += unitPrice * qty;
+      itemsSubtotal += unitPrice * qty;
     } else {
       const product = productMap.get(actualId);
       if (!product) {
@@ -80,7 +101,7 @@ export async function submitSpotOrder({
       if (!product.is_active || product.is_out_of_stock) {
         return { error: `Product is unavailable or out of stock.` };
       }
-      const unitPrice = Number(product.retail_price);
+      const unitPrice = resolveProductUnitPrice(product, pricingTier);
       orderItemsData.push({
         order_id: '',
         product_id: actualId,
@@ -88,7 +109,7 @@ export async function submitSpotOrder({
         quantity: qty,
         unit_price: unitPrice,
       });
-      computedTotal += unitPrice * qty;
+      itemsSubtotal += unitPrice * qty;
     }
   }
 
@@ -109,15 +130,11 @@ export async function submitSpotOrder({
 
     if (promoData && promoData.is_active) {
       validatedPromoCode = promo_code.toUpperCase();
-      if (promoData.discount_type === 'percentage') {
-        discountAmount = Math.round((computedTotal * Number(promoData.discount_value)) / 100);
-      } else {
-        discountAmount = Math.min(Number(promoData.discount_value), computedTotal);
-      }
+      discountAmount = calculatePromoDiscount(itemsSubtotal, promoData);
     }
   }
 
-  const finalTotal = Math.max(0, computedTotal - discountAmount);
+  const breakdown = calculateOrderBreakdown(itemsSubtotal, discountAmount);
 
   // ── STEP 4: Create Order ──
   const { data: order, error: orderError } = await supabase
@@ -129,8 +146,8 @@ export async function submitSpotOrder({
       address,
       google_maps_link,
       promo_code: validatedPromoCode,
-      discount_amount: discountAmount,
-      total_amount: finalTotal,
+      discount_amount: breakdown.discountAmount,
+      total_amount: breakdown.grandTotal,
       status: 'PENDING'
     })
     .select('id')
@@ -153,6 +170,7 @@ export async function submitSpotOrder({
 
   if (itemsError) {
     console.error("Order items creation failed:", itemsError);
+    await supabase.from('orders').delete().eq('id', order.id);
     return { error: "Failed to add items to order." };
   }
 
@@ -161,45 +179,33 @@ export async function submitSpotOrder({
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
     if (token && chatId) {
-      const orderId = order.id.slice(0, 8).toUpperCase();
-      const total = finalTotal.toLocaleString();
+      const notificationItems = orderItemsData.map((pricedItem) => {
+        const name = pricedItem.bundle_offer_id
+          ? bundleMap.get(pricedItem.bundle_offer_id)?.title_ar || 'عرض'
+          : productMap.get(pricedItem.product_id)?.name || 'منتج';
 
-      const productLines = items.map((item) => {
-        const isBundle = item.id.startsWith('bundle-');
-        const actualId = isBundle ? item.id.replace('bundle-', '') : item.id;
-        if (isBundle) {
-          const bundle = bundleMap.get(actualId);
-          const name = bundle?.title_ar || 'عرض';
-          const qty = Math.max(1, Math.min(99, Math.floor(item.quantity)));
-          const unitPrice = Number(bundle?.bundle_price || 0);
-          return `  • ${name} ×${qty} — ${(unitPrice * qty).toLocaleString()} IQD`;
-        }
-        const product = productMap.get(actualId);
-        const name = product?.name || 'منتج';
-        const qty = Math.max(1, Math.min(99, Math.floor(item.quantity)));
-        const unitPrice = Number(product?.retail_price || 0);
-        return `  • ${name} — ${unitPrice.toLocaleString()} IQD ×${qty} = ${(unitPrice * qty).toLocaleString()} IQD`;
+        return {
+          name,
+          quantity: pricedItem.quantity,
+          unitPrice: pricedItem.unit_price,
+        };
       });
 
-      const lines = [
-        `<b>طلب جديد — Skin-IQ</b>`,
-        ``,
-        `رقم الطلب: <code>${orderId}</code>`,
-        `الاسم: ${contact_name}`,
-        `الهاتف: ${contact_phone}`,
-        `العنوان: ${address}`,
-        google_maps_link ? `الموقع: ${google_maps_link}` : null,
-        ``,
-        `<b>المنتجات:</b>`,
-        ...productLines,
-        validatedPromoCode ? `كود الخصم: ${validatedPromoCode} (${discountAmount.toLocaleString()} IQD)` : null,
-        `المجموع: <b>${total} IQD</b>`,
-      ].filter(Boolean).join('\n');
+      const message = buildArabicOrderNotification({
+        orderId: order.id,
+        contactName: contact_name,
+        contactPhone: contact_phone,
+        address,
+        googleMapsLink: google_maps_link,
+        items: notificationItems,
+        breakdown,
+        promoCode: validatedPromoCode,
+      });
 
       const tgResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text: lines, parse_mode: 'HTML' }),
+        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML' }),
       });
 
       if (!tgResponse.ok) {
@@ -214,6 +220,8 @@ export async function submitSpotOrder({
   return { 
     success: true, 
     orderId: order.id.slice(0, 8).toUpperCase(),
-    total: finalTotal 
+    total: breakdown.grandTotal,
+    productsTotal: breakdown.productsTotal,
+    deliveryFee: breakdown.deliveryFee,
   };
 }

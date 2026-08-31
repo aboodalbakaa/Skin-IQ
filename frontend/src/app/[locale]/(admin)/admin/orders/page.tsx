@@ -1,5 +1,7 @@
-import { Package, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { getAdminRole } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
+import OrderManagement from '@/components/admin/OrderManagement';
 
 export default async function AdminOrders({ 
   searchParams 
@@ -7,19 +9,17 @@ export default async function AdminOrders({
   searchParams: Promise<{ query?: string }> 
 }) {
   const { query: initialQuery } = await searchParams;
-  const supabase = createAdminClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  const { data: userData } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', user?.id)
-    .single();
+  const auth = await getAdminRole();
 
-  if (userData?.role === 'MANAGER') {
-    const { redirect } = await import('next/navigation');
-    redirect('/admin/products');
+  if (!auth.authorized) {
+    redirect('/en/admin-login');
   }
+
+  if (auth.role === 'MANAGER') {
+    redirect('/en/admin/products');
+  }
+
+  const supabase = createAdminClient();
 
   const { data: rawOrders } = await supabase
     .from('orders')
@@ -32,10 +32,17 @@ export default async function AdminOrders({
       ),
       order_items (
         id,
+        product_id,
+        bundle_offer_id,
         quantity,
         unit_price,
         products (
           name,
+          image_url
+        ),
+        bundle_offers (
+          title_en,
+          title_ar,
           image_url
         )
       )
@@ -61,5 +68,3 @@ export default async function AdminOrders({
     </div>
   );
 }
-
-import OrderManagement from '@/components/admin/OrderManagement';

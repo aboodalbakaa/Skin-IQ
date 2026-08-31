@@ -1,20 +1,17 @@
-import { createAdminClient } from '@/utils/supabase/admin';
+import { getAdminRole } from '@/utils/supabase/server';
 import ReportManager from '@/components/admin/ReportManager';
 import { FileText } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export default async function AdminReports() {
-  const supabase = createAdminClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  const { data: userData } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', user?.id)
-    .single();
+  const auth = await getAdminRole();
 
-  if (userData?.role === 'MANAGER') {
-    const { redirect } = await import('next/navigation');
-    redirect('/admin/products');
+  if (!auth.authorized) {
+    redirect('/en/admin-login');
+  }
+
+  if (auth.role === 'MANAGER') {
+    redirect('/en/admin/products');
   }
 
   return (

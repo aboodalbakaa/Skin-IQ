@@ -19,13 +19,21 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { postAdminJson } from '@/utils/admin-api';
+import { calculateOrderBreakdown, DELIVERY_FEE_IQD } from '@/lib/order-pricing';
 
 interface OrderItem {
   id: string;
+  product_id: string | null;
+  bundle_offer_id: string | null;
   quantity: number;
   unit_price: number;
   products: {
     name: string;
+    image_url: string | null;
+  } | null;
+  bundle_offers: {
+    title_en: string | null;
+    title_ar: string | null;
     image_url: string | null;
   } | null;
 }
@@ -41,6 +49,8 @@ interface Order {
   google_maps_link: string | null;
   promo_code: string | null;
   discount_amount: number;
+  products_total?: number | null;
+  delivery_fee?: number | null;
   app_users: {
     full_name: string | null;
     business_name: string | null;
@@ -94,6 +104,21 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
            promo.toLowerCase().includes(query);
   });
 
+  const getOrderBreakdown = (order: Order) => {
+    const itemsSubtotal = order.order_items.reduce(
+      (total, item) => total + Number(item.unit_price) * Number(item.quantity),
+      0
+    );
+
+    return calculateOrderBreakdown(
+      itemsSubtotal,
+      Number(order.discount_amount || 0),
+      Number(order.delivery_fee ?? DELIVERY_FEE_IQD)
+    );
+  };
+
+  const selectedBreakdown = selectedOrder ? getOrderBreakdown(selectedOrder) : null;
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PAID':
@@ -144,14 +169,17 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
               <tr>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer / Partner</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment Breakdown</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
+                filteredOrders.map((order) => {
+                  const breakdown = getOrderBreakdown(order);
+
+                  return (
                   <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
                     <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                       {new Date(order.created_at).toLocaleDateString()}
@@ -164,8 +192,21 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
                         {order.app_users?.business_name || order.contact_phone || 'No phone'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100 italic">
-                      IQD {Number(order.total_amount).toLocaleString()}
+                    <td className="px-6 py-4 min-w-48">
+                      <div className="space-y-1 text-[11px] tabular-nums">
+                        <div className="flex justify-between gap-4 text-slate-500">
+                          <span>Products</span>
+                          <span>IQD {breakdown.productsTotal.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between gap-4 text-slate-500">
+                          <span>Delivery</span>
+                          <span>IQD {breakdown.deliveryFee.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between gap-4 border-t border-border pt-1 font-black text-slate-900 dark:text-slate-100">
+                          <span>Grand total</span>
+                          <span>IQD {breakdown.grandTotal.toLocaleString()}</span>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(order.status)}`}>
@@ -186,7 +227,8 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
                       </button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={5} className="px-10 py-20 text-center text-slate-400 italic text-sm">No orders matching your search.</td>
@@ -306,30 +348,42 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
                   <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 dark:bg-white/5 border-b border-border text-slate-400 font-bold uppercase text-[10px]">
                       <tr>
-                        <th className="px-6 py-3">Product</th>
+                        <th className="px-6 py-3">Item</th>
                         <th className="px-6 py-3 text-center">Qty</th>
-                        <th className="px-6 py-3 text-right">Price</th>
+                        <th className="px-6 py-3 text-right">Unit Price</th>
+                        <th className="px-6 py-3 text-right">Line Total</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {selectedOrder.order_items.map((item) => (
+                      {selectedOrder.order_items.map((item) => {
+                        const itemName = item.products?.name || item.bundle_offers?.title_en || item.bundle_offers?.title_ar || "Unknown Item";
+                        const itemImage = item.products?.image_url || item.bundle_offers?.image_url;
+
+                        return (
                         <tr key={item.id} className="text-slate-700 dark:text-slate-300">
                           <td className="px-6 py-4">
                              <div className="flex items-center gap-3">
                                <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 flex-shrink-0">
-                                 {item.products?.image_url ? (
-                                   <img src={item.products.image_url} alt="" className="w-full h-full object-cover" />
+                                 {itemImage ? (
+                                   <img src={itemImage} alt={itemName} className="w-full h-full object-cover" />
                                  ) : (
                                    <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="w-4 h-4 text-slate-300" /></div>
                                  )}
                                </div>
-                               <span className="font-bold">{item.products?.name || "Unknown Product"}</span>
+                               <div>
+                                 <span className="font-bold">{itemName}</span>
+                                 {item.bundle_offer_id && (
+                                   <span className="block text-[9px] font-black uppercase tracking-widest text-red-500">Bundle offer</span>
+                                 )}
+                               </div>
                              </div>
                           </td>
                           <td className="px-6 py-4 text-center font-bold">{item.quantity}</td>
                           <td className="px-6 py-4 text-right font-mono text-xs">IQD {Number(item.unit_price).toLocaleString()}</td>
+                          <td className="px-6 py-4 text-right font-mono text-xs font-bold">IQD {(Number(item.unit_price) * Number(item.quantity)).toLocaleString()}</td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -338,8 +392,8 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
               {/* Totals Summary */}
               <div className="border-t border-border pt-6 space-y-3">
                 <div className="flex justify-between text-sm text-slate-500">
-                  <span className="font-bold uppercase tracking-widest text-[10px]">Subtotal</span>
-                  <span className="font-bold">IQD {(Number(selectedOrder.total_amount) + Number(selectedOrder.discount_amount)).toLocaleString()}</span>
+                  <span className="font-bold uppercase tracking-widest text-[10px]">Items subtotal</span>
+                  <span className="font-bold">IQD {selectedBreakdown!.itemsSubtotal.toLocaleString()}</span>
                 </div>
                 {selectedOrder.promo_code && (
                    <div className="flex justify-between text-sm text-emerald-600 font-bold">
@@ -347,9 +401,17 @@ export default function OrderManagement({ initialOrders, initialQuery = '' }: Or
                     <span>- IQD {Number(selectedOrder.discount_amount).toLocaleString()}</span>
                   </div>
                 )}
+                <div className="flex justify-between text-sm text-slate-600 dark:text-slate-300">
+                  <span className="font-black uppercase tracking-widest text-[10px]">Products total</span>
+                  <span className="font-black">IQD {selectedBreakdown!.productsTotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm text-blue-600 dark:text-blue-400">
+                  <span className="flex items-center gap-1 font-black uppercase tracking-widest text-[10px]"><Truck className="w-3 h-3" /> Delivery</span>
+                  <span className="font-black">IQD {selectedBreakdown!.deliveryFee.toLocaleString()}</span>
+                </div>
                 <div className="flex justify-between items-center pt-4 border-t-2 border-dotted border-border">
-                  <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Total Charged</span>
-                  <span className="text-2xl font-bold text-primary italic">IQD {Number(selectedOrder.total_amount).toLocaleString()}</span>
+                  <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Grand Total</span>
+                  <span className="text-2xl font-bold text-primary italic">IQD {selectedBreakdown!.grandTotal.toLocaleString()}</span>
                 </div>
               </div>
             </div>

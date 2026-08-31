@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Package, Clock, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react';
+import { calculateOrderBreakdown, sumPricedLines } from '@/lib/order-pricing';
 
 interface Order {
   id: string;
   created_at: string;
   total_amount: number;
   status: string;
+  discount_amount: number;
+  order_items: Array<{ quantity: number; unit_price: number }>;
 }
 
 export default function OrderHistory({ userId }: { userId: string }) {
@@ -20,7 +23,7 @@ export default function OrderHistory({ userId }: { userId: string }) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('orders')
-        .select('id, created_at, total_amount, status')
+        .select('id, created_at, total_amount, discount_amount, status, order_items(quantity, unit_price)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -64,7 +67,13 @@ export default function OrderHistory({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-4">
-      {orders.map((order) => (
+      {orders.map((order) => {
+        const breakdown = calculateOrderBreakdown(
+          sumPricedLines(order.order_items || []),
+          Number(order.discount_amount || 0),
+        );
+
+        return (
         <div 
           key={order.id} 
           className="group bg-white dark:bg-[#0D1518]/50 border border-border rounded-2xl p-6 transition-all hover:shadow-lg hover:shadow-primary/5 active:scale-[0.99]"
@@ -88,10 +97,11 @@ export default function OrderHistory({ userId }: { userId: string }) {
                 </div>
               </div>
               <div className="flex flex-col items-start sm:items-end">
-                <div className="text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-1.5 opacity-50">Total Amout</div>
+                <div className="text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest mb-1.5 opacity-50">Grand Total</div>
                 <div className="text-lg font-black text-primary tabular-nums">
-                  IQD {Number(order.total_amount).toLocaleString()}
+                  IQD {breakdown.grandTotal.toLocaleString()}
                 </div>
+                <div className="text-[10px] text-slate-500 mt-1">Products {breakdown.productsTotal.toLocaleString()} + Delivery {breakdown.deliveryFee.toLocaleString()} IQD</div>
               </div>
               <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase border h-fit shadow-sm ${getStatusColor(order.status)}`}>
                 {order.status === 'PAID' ? <CheckCircle2 className="w-3 h-3" /> :
@@ -102,7 +112,8 @@ export default function OrderHistory({ userId }: { userId: string }) {
             </div>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

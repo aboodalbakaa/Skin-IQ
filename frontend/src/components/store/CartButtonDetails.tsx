@@ -3,6 +3,7 @@
 import { useCartStore } from '@/store/cartStore';
 import { ShoppingBag, Plus, Minus, Check } from 'lucide-react';
 import { useState } from 'react';
+import { resolveProductUnitPrice } from '@/lib/order-pricing';
 
 interface CartButtonDetailsProps {
   product: {
@@ -23,9 +24,10 @@ export default function CartButtonDetails({ product, isWholesale }: CartButtonDe
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
-    const finalPrice = isWholesale 
-      ? (product.discount_wholesale_price || product.wholesale_price)
-      : (product.discount_retail_price || product.retail_price);
+    const finalPrice = resolveProductUnitPrice(
+      product,
+      isWholesale ? 'WHOLESALE' : 'RETAIL',
+    );
 
     addItem({
       id: product.id,

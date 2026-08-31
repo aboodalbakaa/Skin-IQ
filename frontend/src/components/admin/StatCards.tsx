@@ -1,11 +1,18 @@
-import { DollarSign, UserCheck, Activity, TrendingUp, TrendingDown, Clock, CheckCircle, ChevronRight } from 'lucide-react';
+import { DollarSign, UserCheck, Activity, TrendingUp, TrendingDown, Clock, CheckCircle, ChevronRight, Globe } from 'lucide-react';
 import { Link } from '@/i18n/routing';
+import RevenueBreakdown from './RevenueBreakdown';
 
 interface StatCardsProps {
   stats: {
     clearedRevenue: number;
+    clearedProductsRevenue: number;
+    clearedDeliveryRevenue: number;
     pendingRevenue: number;
+    pendingProductsRevenue: number;
+    pendingDeliveryRevenue: number;
     outstandingDebt: number;
+    outstandingProductsRevenue: number;
+    outstandingDeliveryRevenue: number;
     pendingWholesalers: number;
     orderTrend: number;
     orderVolume: number;
@@ -14,47 +21,31 @@ interface StatCardsProps {
   }
 }
 
-import { Globe } from 'lucide-react';
-
 export default function StatCards({ stats }: StatCardsProps) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('en-IQ', { maximumFractionDigits: 0 }).format(val) + ' IQD';
-  };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-10">
       
       {/* Monthly Revenue (Cleared) */}
-      <div className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl">
-            <Activity className="w-6 h-6" />
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Revenue (Cleared)</p>
-            <h3 className="text-2xl font-black mt-1 text-slate-900 dark:text-white tabular-nums">{formatCurrency(stats.clearedRevenue)}</h3>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-4 text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
-           <CheckCircle className="w-3 h-3" /> Settled Payments
-        </div>
-      </div>
+      <RevenueBreakdown
+        title="Revenue (Cleared)"
+        productsTotal={stats.clearedProductsRevenue}
+        deliveryTotal={stats.clearedDeliveryRevenue}
+        grandTotal={stats.clearedRevenue}
+        icon={Activity}
+        tone="emerald"
+        footer={<span className="inline-flex items-center gap-2 text-emerald-500"><CheckCircle className="w-3 h-3" /> Settled payments</span>}
+      />
 
       {/* Potential Revenue (Pending) */}
-      <div className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-3 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl">
-            <Clock className="w-6 h-6" />
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Potential (Pending)</p>
-            <h3 className="text-2xl font-black mt-1 text-slate-900 dark:text-white tabular-nums">{formatCurrency(stats.pendingRevenue)}</h3>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-4 text-[10px] font-bold text-amber-500 uppercase tracking-widest">
-           {stats.orderVolume} active orders
-        </div>
-      </div>
+      <RevenueBreakdown
+        title="Potential (Pending)"
+        productsTotal={stats.pendingProductsRevenue}
+        deliveryTotal={stats.pendingDeliveryRevenue}
+        grandTotal={stats.pendingRevenue}
+        icon={Clock}
+        tone="amber"
+        footer={<span className="text-amber-500">{stats.orderVolume} active orders</span>}
+      />
 
       {/* Site Traffic Card */}
       <Link href="/admin/traffic" className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover group">
@@ -74,21 +65,20 @@ export default function StatCards({ stats }: StatCardsProps) {
       </Link>
 
       {/* Outstanding Debt */}
-      <div className="bg-white dark:bg-[#0D1518] p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 interactive-hover">
-        <div className="flex justify-between items-start mb-4">
-          <div className="p-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl">
-            <DollarSign className="w-6 h-6" />
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Unpaid Debt</p>
-            <h3 className="text-2xl font-black mt-1 text-slate-900 dark:text-white tabular-nums">{formatCurrency(stats.outstandingDebt)}</h3>
-          </div>
-        </div>
-        <div className={`flex items-center gap-2 mt-4 text-[10px] font-bold uppercase tracking-widest ${stats.orderTrend >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-           {stats.orderTrend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-           {Math.abs(stats.orderTrend)}% MoM Volume
-        </div>
-      </div>
+      <RevenueBreakdown
+        title="Unpaid Debt"
+        productsTotal={stats.outstandingProductsRevenue}
+        deliveryTotal={stats.outstandingDeliveryRevenue}
+        grandTotal={stats.outstandingDebt}
+        icon={DollarSign}
+        tone="red"
+        footer={(
+          <span className={`inline-flex items-center gap-2 ${stats.orderTrend >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            {stats.orderTrend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {Math.abs(stats.orderTrend)}% MoM volume
+          </span>
+        )}
+      />
 
       {/* Pending Wholesalers */}
       <Link href="/admin/users?filter=pending" className="bg-primary dark:bg-primary/20 p-6 rounded-3xl shadow-lg border border-transparent dark:border-primary/30 interactive-hover group">

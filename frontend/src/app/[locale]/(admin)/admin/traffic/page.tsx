@@ -1,7 +1,15 @@
 import { createAdminClient } from '@/utils/supabase/admin';
-import { Globe, Users, Monitor, Smartphone, Tablet, Navigation, Clock, Activity, BarChart3, TrendingUp } from 'lucide-react';
+import { getAdminRole } from '@/utils/supabase/server';
+import { Globe, Monitor, Smartphone, Tablet, Navigation, Activity, BarChart3, TrendingUp } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export default async function TrafficInsights() {
+  const auth = await getAdminRole();
+
+  if (!auth.authorized) {
+    redirect('/en/admin-login');
+  }
+
   const supabase = createAdminClient();
 
   // 1. Fetch Summary Data

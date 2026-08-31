@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/utils/supabase/admin';
+import {
+  calculateOrderBreakdown,
+  sumPricedLines,
+} from '@/lib/order-pricing';
+import {
+  applyOrderReconciliation,
+  buildReconciliationManifest,
+  getCorrectionNotificationStatus,
+  sendCorrectedPendingOrderNotification,
+} from '@/lib/order-reconciliation';
+import { BATCH_ID } from '@/lib/reconciliation-batch';
 
 type AdminSupabaseClient = ReturnType<typeof createAdminClient>;
 
@@ -25,6 +36,18 @@ function asBoolean(value: FormDataEntryValue | unknown) {
 
 function isFile(value: FormDataEntryValue | unknown): value is File {
   return typeof File !== 'undefined' && value instanceof File && value.size > 0;
+}
+
+function withOrderBreakdown<T extends Record<string, any>>(order: T) {
+  const items = Array.isArray(order.order_items) ? order.order_items : [];
+  const itemsSubtotal = sumPricedLines(items);
+  const breakdown = calculateOrderBreakdown(itemsSubtotal, Number(order.discount_amount || 0));
+  return {
+    ...order,
+    products_total: breakdown.productsTotal,
+    delivery_fee: breakdown.deliveryFee,
+    calculated_grand_total: breakdown.grandTotal,
+  };
 }
 
 async function parseBody(request: NextRequest) {
@@ -123,6 +146,7 @@ async function getPromoCodeStats(supabase: AdminSupabaseClient) {
     .select(`
       promo_code,
       total_amount,
+      discount_amount,
       id,
       created_at,
       contact_name,
@@ -132,7 +156,8 @@ async function getPromoCodeStats(supabase: AdminSupabaseClient) {
         full_name,
         phone_number,
         business_name
-      )
+      ),
+      order_items (quantity, unit_price)
     `)
     .not('promo_code', 'is', null);
 
@@ -141,14 +166,14 @@ async function getPromoCodeStats(supabase: AdminSupabaseClient) {
   return (promoCodes || []).map((promo) => {
     const associatedOrders = (orders || []).filter(
       (order) => order.promo_code?.toUpperCase() === promo.code?.toUpperCase(),
-    );
+    ).map((order) => withOrderBreakdown(order));
 
     return {
       ...promo,
       usageCount: associatedOrders.length,
-      revenue: associatedOrders.reduce((sum, order) => sum + (Number(order.total_amount) || 0), 0),
+      revenue: associatedOrders.reduce((sum, order) => sum + order.products_total, 0),
       partnerProfit: associatedOrders.reduce(
-        (sum, order) => sum + ((Number(order.total_amount) || 0) * (Number(promo.commission_rate) || 0) / 100),
+        (sum, order) => sum + (order.products_total * (Number(promo.commission_rate) || 0) / 100),
         0,
       ),
       orders: associatedOrders,
@@ -173,21 +198,39 @@ export async function POST(request: NextRequest) {
         const currentPeriodStart = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
         const previousPeriodStart = new Date(now.getTime() - (2 * days * 24 * 60 * 60 * 1000));
 
-        const { data: orderStats } = await supabase.from('orders').select('total_amount, status, created_at');
+        const { data: orderStats } = await supabase.from('orders')
+          .select('id, total_amount, discount_amount, status, created_at, order_items(quantity, unit_price)');
 
         let clearedRevenue = 0;
+        let clearedProductsRevenue = 0;
+        let clearedDeliveryRevenue = 0;
         let pendingRevenue = 0;
+        let pendingProductsRevenue = 0;
+        let pendingDeliveryRevenue = 0;
         let outstandingDebt = 0;
+        let outstandingProductsRevenue = 0;
+        let outstandingDeliveryRevenue = 0;
         let currentPeriodOrders = 0;
         let previousPeriodOrders = 0;
 
         orderStats?.forEach((order) => {
-          const amount = Number(order.total_amount) || 0;
+          const calculated = withOrderBreakdown(order);
+          const amount = calculated.calculated_grand_total;
           const date = new Date(order.created_at);
           if (order.status === 'CANCELLED') return;
-          if (order.status === 'PAID' || order.status === 'DELIVERED') clearedRevenue += amount;
-          else if (order.status === 'PENDING' || order.status === 'PENDING_DELIVERY') pendingRevenue += amount;
-          else if (order.status === 'DEBT') outstandingDebt += amount;
+          if (order.status === 'PAID' || order.status === 'DELIVERED') {
+            clearedRevenue += amount;
+            clearedProductsRevenue += calculated.products_total;
+            clearedDeliveryRevenue += calculated.delivery_fee;
+          } else if (order.status === 'PENDING' || order.status === 'PENDING_DELIVERY') {
+            pendingRevenue += amount;
+            pendingProductsRevenue += calculated.products_total;
+            pendingDeliveryRevenue += calculated.delivery_fee;
+          } else if (order.status === 'DEBT') {
+            outstandingDebt += amount;
+            outstandingProductsRevenue += calculated.products_total;
+            outstandingDeliveryRevenue += calculated.delivery_fee;
+          }
           if (date > currentPeriodStart) currentPeriodOrders++;
           else if (date > previousPeriodStart) previousPeriodOrders++;
         });
@@ -198,17 +241,17 @@ export async function POST(request: NextRequest) {
           .not('business_name', 'is', null);
 
         const { data: recentOrders } = await supabase.from('orders')
-          .select('id, total_amount, status, created_at, contact_name, app_users(full_name, business_name)')
+          .select('id, total_amount, discount_amount, status, created_at, contact_name, app_users(full_name, business_name), order_items(quantity, unit_price)')
           .order('created_at', { ascending: false })
           .limit(5);
 
         const formattedOrders = recentOrders?.map((order) => ({
-          ...order,
+          ...withOrderBreakdown(order),
           app_users: Array.isArray(order.app_users) ? order.app_users[0] : order.app_users,
         })) || [];
 
         const { data: topRaw } = await supabase.from('order_items')
-          .select('product_id, quantity, products(name, image_url, retail_price)')
+          .select('product_id, quantity, unit_price, products(name, image_url)')
           .limit(50);
 
         const topMap = new Map();
@@ -218,10 +261,15 @@ export async function POST(request: NextRequest) {
           const existing = topMap.get(item.product_id) || {
             name: product?.name || 'Unknown',
             image: product?.image_url,
-            price: product?.retail_price,
+            price: Number(item.unit_price) || 0,
             totalSold: 0,
+            valueSold: 0,
           };
           existing.totalSold += item.quantity || 0;
+          existing.valueSold += (Number(item.unit_price) || 0) * (item.quantity || 0);
+          existing.price = existing.totalSold > 0
+            ? Math.round(existing.valueSold / existing.totalSold)
+            : 0;
           topMap.set(item.product_id, existing);
         });
 
@@ -247,8 +295,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           metrics: {
             clearedRevenue,
+            clearedProductsRevenue,
+            clearedDeliveryRevenue,
             pendingRevenue,
+            pendingProductsRevenue,
+            pendingDeliveryRevenue,
             outstandingDebt,
+            outstandingProductsRevenue,
+            outstandingDeliveryRevenue,
             pendingWholesalers: pendingWholesalers || 0,
             orderTrend,
             orderVolume: currentPeriodOrders,
@@ -294,9 +348,16 @@ export async function POST(request: NextRequest) {
         const name = formData ? asString(formData.get('name')) : data.name;
         const retail_price = asNumber(formData ? formData.get('retail_price') : data.retail_price);
         const wholesale_price = asNumber(formData ? formData.get('wholesale_price') : data.wholesale_price);
+        const discount_retail_price = asNumber(formData ? formData.get('discount_retail_price') : data.discount_retail_price);
+        const discount_wholesale_price = asNumber(formData ? formData.get('discount_wholesale_price') : data.discount_wholesale_price);
 
         if ((action === 'updateProduct' && !id) || !name || retail_price === null || wholesale_price === null) {
           return jsonError('Missing required fields', 400);
+        }
+        if (retail_price < 0 || wholesale_price < 0
+          || (discount_retail_price !== null && (discount_retail_price < 0 || discount_retail_price > retail_price))
+          || (discount_wholesale_price !== null && (discount_wholesale_price < 0 || discount_wholesale_price > wholesale_price))) {
+          return jsonError('Discount prices must be between zero and their corresponding base price', 400);
         }
 
         let image_url = formData ? asString(formData.get('existing_image_url')) : data.image_url;
@@ -312,8 +373,8 @@ export async function POST(request: NextRequest) {
           description: formData ? asString(formData.get('description')) : data.description || '',
           retail_price,
           wholesale_price,
-          discount_retail_price: asNumber(formData ? formData.get('discount_retail_price') : data.discount_retail_price),
-          discount_wholesale_price: asNumber(formData ? formData.get('discount_wholesale_price') : data.discount_wholesale_price),
+          discount_retail_price,
+          discount_wholesale_price,
           is_active: asBoolean(formData ? formData.get('is_active') : data.is_active),
           is_out_of_stock: asBoolean(formData ? formData.get('is_out_of_stock') : data.is_out_of_stock),
           category: formData ? asString(formData.get('category')) : data.category || '',
@@ -462,6 +523,9 @@ export async function POST(request: NextRequest) {
         const discount_type = asString(formData?.get('discount_type') ?? data.discount_type, 'percentage');
 
         if (!code || discount === null) return jsonError('Missing required fields', 400);
+        if (discount <= 0 || (discount_type === 'percentage' && discount > 100)) {
+          return jsonError('Promo discount must be positive and percentage discounts cannot exceed 100%', 400);
+        }
 
         const { error } = await supabase.from('promo_codes').insert({
           code,
@@ -507,11 +571,11 @@ export async function POST(request: NextRequest) {
       case 'getSalesSummaryData': {
         const { data: rows, error } = await supabase
           .from('orders')
-          .select('id, total_amount, status, created_at, app_users(role, business_name), order_items(quantity, unit_price, products(name))')
+          .select('id, total_amount, discount_amount, status, created_at, app_users(role, business_name), order_items(quantity, unit_price, products(name))')
           .eq('status', 'PAID')
           .order('created_at', { ascending: false });
         if (error) return jsonError(error.message);
-        return NextResponse.json(rows || []);
+        return NextResponse.json((rows || []).map((order) => withOrderBreakdown(order)));
       }
 
       case 'getPartnerDirectoryData': {
@@ -563,6 +627,45 @@ export async function POST(request: NextRequest) {
         if (!isFile(file)) return jsonError('No file provided', 400);
         const url = await uploadImageToStorage(supabase, 'site-assets', 'hero', file);
         return NextResponse.json({ success: true, url });
+      }
+
+      case 'previewOrderReconciliation': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
+        const manifest = await buildReconciliationManifest(supabase);
+        return NextResponse.json({
+          batchId: manifest.batchId,
+          manifestHash: manifest.manifestHash,
+          summary: manifest.summary,
+          warnings: manifest.warnings,
+        });
+      }
+
+      case 'applyOrderReconciliation': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
+        if (data.confirm !== BATCH_ID || typeof data.manifestHash !== 'string') {
+          return jsonError('Exact batch confirmation and manifest hash are required', 400);
+        }
+        return NextResponse.json(await applyOrderReconciliation(
+          supabase,
+          data.manifestHash,
+          admin.user.id,
+        ));
+      }
+
+      case 'getCorrectionNotificationStatus': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
+        return NextResponse.json(await getCorrectionNotificationStatus(supabase));
+      }
+
+      case 'sendCorrectedPendingOrderNotification': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
+        const orderId = asString(data.orderId);
+        if (!orderId) return jsonError('Order ID is required', 400);
+        return NextResponse.json(await sendCorrectedPendingOrderNotification(
+          supabase,
+          orderId,
+          admin.user.id,
+        ));
       }
 
       default:

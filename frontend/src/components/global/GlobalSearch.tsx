@@ -7,12 +7,16 @@ import Fuse from 'fuse.js';
 import { useCartStore } from '@/store/cartStore';
 import { Link, useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
+import { resolveProductUnitPrice, type PricingTier } from '@/lib/order-pricing';
 
 interface Product {
   id: string;
   name: string;
   description: string;
   retail_price: number;
+  wholesale_price: number;
+  discount_retail_price?: number | null;
+  discount_wholesale_price?: number | null;
   image_url: string;
   category: string;
   title_en?: string;
@@ -26,6 +30,7 @@ export default function GlobalSearch() {
   const [products, setProducts] = useState<Product[]>([]);
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pricingTier, setPricingTier] = useState<PricingTier>('RETAIL');
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
@@ -52,12 +57,25 @@ export default function GlobalSearch() {
   async function loadProducts() {
     setLoading(true);
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    let resolvedTier: PricingTier = 'RETAIL';
+
+    if (user) {
+      const { data: profile } = await supabase
+        .from('app_users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      if (profile?.role === 'WHOLESALE') resolvedTier = 'WHOLESALE';
+    }
+
     const { data } = await supabase
       .from('products')
-      .select('id, name, description, retail_price, image_url, category, title_en, description_en')
+      .select('id, name, description, retail_price, wholesale_price, discount_retail_price, discount_wholesale_price, image_url, category, title_en, description_en')
       .eq('is_active', true);
     
     if (data) setProducts(data);
+    setPricingTier(resolvedTier);
     setLoading(false);
   }
 
@@ -81,10 +99,11 @@ export default function GlobalSearch() {
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    const price = resolveProductUnitPrice(product, pricingTier);
     addItem({
       id: product.id,
       name: product.name,
-      price: product.retail_price,
+      price,
       image_url: product.image_url,
       quantity: 1
     });
@@ -154,7 +173,9 @@ export default function GlobalSearch() {
               )}
 
               <div className="grid grid-cols-1 gap-2">
-                {results.map((product) => (
+                {results.map((product) => {
+                  const displayedPrice = resolveProductUnitPrice(product, pricingTier);
+                  return (
                   <Link 
                     key={product.id}
                     href={`/products/${product.id}`}
@@ -172,7 +193,7 @@ export default function GlobalSearch() {
                         {product.category}
                       </p>
                       <p className="text-xs font-bold text-accent mt-1">
-                        {product.retail_price.toLocaleString()} IQD
+                        {displayedPrice.toLocaleString()} IQD
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -187,7 +208,8 @@ export default function GlobalSearch() {
                       </div>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

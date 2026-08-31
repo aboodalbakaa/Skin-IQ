@@ -13,8 +13,14 @@ export const dynamic = 'force-dynamic';
 interface DashboardData {
   metrics: {
     clearedRevenue: number;
+    clearedProductsRevenue: number;
+    clearedDeliveryRevenue: number;
     pendingRevenue: number;
+    pendingProductsRevenue: number;
+    pendingDeliveryRevenue: number;
     outstandingDebt: number;
+    outstandingProductsRevenue: number;
+    outstandingDeliveryRevenue: number;
     pendingWholesalers: number;
     orderTrend: number;
     orderVolume: number;

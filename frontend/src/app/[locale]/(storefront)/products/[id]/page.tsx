@@ -5,6 +5,7 @@ import ProductGrid from '@/components/store/ProductGrid';
 import { ShoppingBag, Star, ChevronRight, Play, Info, BookOpen, Package } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import CartButtonDetails from '@/components/store/CartButtonDetails';
+import { resolveProductUnitPrice } from '@/lib/order-pricing';
 
 interface Product {
   id: string;
@@ -75,12 +76,12 @@ export default async function ProductDetailPage({
   const displayImages = product.images && product.images.length > 0 ? product.images : [product.image_url];
   const specsList = product.specs ? product.specs.split('\n').filter((s: string) => s.trim()) : [];
 
-  const finalPrice = isWholesale 
-    ? (product.discount_wholesale_price || product.wholesale_price)
-    : (product.discount_retail_price || product.retail_price);
-  
+  const finalPrice = resolveProductUnitPrice(
+    product,
+    isWholesale ? 'WHOLESALE' : 'RETAIL',
+  );
   const originalPrice = isWholesale ? product.wholesale_price : product.retail_price;
-  const hasDiscount = isWholesale ? !!product.discount_wholesale_price : !!product.discount_retail_price;
+  const hasDiscount = finalPrice < Number(originalPrice);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -150,13 +151,9 @@ export default async function ProductDetailPage({
                     {finalPrice.toLocaleString()}
                     <span className="text-sm ml-2 font-bold opacity-60 uppercase tracking-widest">{tc('iqd')}</span>
                   </span>
-                  {isWholesale ? (
+                  {hasDiscount && (
                     <span className="text-xl font-medium text-slate-300 line-through">
-                      {product.retail_price.toLocaleString()} {tc('iqd')}
-                    </span>
-                  ) : product.discount_retail_price && (
-                    <span className="text-xl font-medium text-slate-300 line-through">
-                      {product.retail_price.toLocaleString()}
+                      {Number(originalPrice).toLocaleString()} {tc('iqd')}
                     </span>
                   )}
                 </div>

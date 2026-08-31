@@ -1,7 +1,15 @@
 import { createAdminClient } from '@/utils/supabase/admin';
+import { getAdminRole } from '@/utils/supabase/server';
 import BundleOfferTable from '@/components/admin/BundleOfferTable';
+import { redirect } from 'next/navigation';
 
 export default async function AdminBundleOffers() {
+  const auth = await getAdminRole();
+
+  if (!auth.authorized) {
+    redirect('/en/admin-login');
+  }
+
   const supabase = createAdminClient();
 
   const { data: offers, error } = await supabase

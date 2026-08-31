@@ -1,5 +1,7 @@
 import { createAdminClient } from '@/utils/supabase/admin';
+import { getAdminRole } from '@/utils/supabase/server';
 import UserManagementTable from './UserManagementTable';
+import { redirect } from 'next/navigation';
 
 export default async function UserManagementPage({ 
   searchParams 
@@ -7,19 +9,17 @@ export default async function UserManagementPage({
   searchParams: Promise<{ filter?: string }> 
 }) {
   const { filter } = await searchParams;
-  const supabase = createAdminClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  const { data: userData } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', user?.id)
-    .single();
+  const auth = await getAdminRole();
 
-  if (userData?.role === 'MANAGER') {
-    const { redirect } = await import('next/navigation');
-    redirect('/admin/products');
+  if (!auth.authorized) {
+    redirect('/en/admin-login');
   }
+
+  if (auth.role === 'MANAGER') {
+    redirect('/en/admin/products');
+  }
+
+  const supabase = createAdminClient();
 
   // Fetch all users for management
   const { data: users, error } = await supabase

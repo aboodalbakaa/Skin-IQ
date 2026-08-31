@@ -47,13 +47,15 @@ export default function ReportManager() {
       icon: TrendingUp,
       color: 'emerald',
       fetcher: () => postAdminJson<any[]>('getSalesSummaryData'),
-      columns: ['Date', 'Order ID', 'Type', 'Business', 'Revenue (IQD)'],
+      columns: ['Date', 'Order ID', 'Type', 'Business', 'Product Total (IQD)', 'Delivery (IQD)', 'Grand Total (IQD)'],
       mapping: (data) => data.map(item => [
         new Date(item.created_at).toLocaleDateString(),
         item.id.slice(0, 8),
         item.app_users?.role || 'CUSTOMER',
         item.app_users?.business_name || 'N/A',
-        item.total_amount.toLocaleString()
+        Number(item.products_total || 0).toLocaleString(),
+        Number(item.delivery_fee || 0).toLocaleString(),
+        Number(item.total_amount || 0).toLocaleString()
       ])
     },
     {

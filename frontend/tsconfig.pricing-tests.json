@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "outDir": ".pricing-test-build",
+    "plugins": []
+  },
+  "include": [
+    "src/lib/order-pricing.ts",
+    "src/lib/order-notification.ts",
+    "tests/order-pricing.test.ts"
+  ]
+}
