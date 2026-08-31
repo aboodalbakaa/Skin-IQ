@@ -16,6 +16,12 @@ export const EXPECTED_ALL_ORDER_IDS_SHA256 =
 export const EXPECTED_PENDING_ORDER_IDS_SHA256 =
   "a7f9764e19d0ca1185e4ee4a4950deb1bd1beb115d4bb36c3042d80b6300bf90";
 
+// This deleted code is evidenced by its frozen order: 3,720 / 93,000 = 4%.
+// It is used only by the historical reconciliation and is not reactivated.
+export const FROZEN_PROMO_OVERRIDES = {
+  TIBA98: { discount_type: 'percentage', discount_value: 4 },
+} as const;
+
 export const ALL_ORDER_IDS = [
   "0043042a-5bbe-4643-a01f-b732cfc55fb0",
   "004e68c7-61b9-4a60-8f22-1d95ade87c95",

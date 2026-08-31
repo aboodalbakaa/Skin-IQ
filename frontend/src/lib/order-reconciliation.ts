@@ -10,6 +10,7 @@ import {
   EXPECTED_ORDER_ITEM_SHAPE_SHA256,
   EXPECTED_PENDING_ORDER_IDS_SHA256,
   EXPECTED_PENDING_ORDER_COUNT,
+  FROZEN_PROMO_OVERRIDES,
   PENDING_ORDER_IDS,
 } from './reconciliation-batch';
 import { buildArabicOrderNotification } from './order-notification';
@@ -396,10 +397,27 @@ export async function buildReconciliationManifest(
         quantity: item.quantity,
         unit_price: item.newUnitPrice,
       })));
-      const promo = order.promo_code ? promoMap.get(order.promo_code.toUpperCase()) : null;
+      const normalizedPromoCode = order.promo_code?.trim().toUpperCase() || '';
+      const frozenPromoOverride = normalizedPromoCode
+        ? FROZEN_PROMO_OVERRIDES[normalizedPromoCode as keyof typeof FROZEN_PROMO_OVERRIDES]
+        : null;
+      const promo = normalizedPromoCode
+        ? promoMap.get(normalizedPromoCode) || frozenPromoOverride
+        : null;
 
       if (order.promo_code && !promo && toIqd(order.discount_amount) > 0) {
         throw new Error(`Order ${order.id} uses missing promo code ${order.promo_code}.`);
+      }
+      if (frozenPromoOverride) {
+        const oldItemsSubtotal = sumPricedLines(reconciledItems.map((item) => ({
+          quantity: item.quantity,
+          unit_price: item.oldUnitPrice,
+        })));
+        const evidencedDiscount = calculatePromoDiscount(oldItemsSubtotal, frozenPromoOverride);
+        if (evidencedDiscount !== toIqd(order.discount_amount)) {
+          throw new Error(`Frozen promo evidence no longer matches order ${order.id}.`);
+        }
+        warnings.push(`Historical promo ${normalizedPromoCode} was preserved at its evidenced 4% rate for cancelled order ${order.id}.`);
       }
 
       const newDiscountAmount = calculatePromoDiscount(itemsSubtotal, promo || null);
