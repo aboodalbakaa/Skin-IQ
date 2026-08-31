@@ -13,6 +13,8 @@ import {
 } from '@/lib/order-reconciliation';
 import { BATCH_ID } from '@/lib/reconciliation-batch';
 
+export const maxDuration = 300;
+
 type AdminSupabaseClient = ReturnType<typeof createAdminClient>;
 
 const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN', 'MANAGER'];
@@ -421,6 +423,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'updateOrderStatus': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { orderId, status } = data;
         if (!orderId || !status) return jsonError('Missing required fields', 400);
         const { error } = await supabase.from('orders').update({ status }).eq('id', orderId);
@@ -431,6 +434,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'updateUserRole': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { userId, role } = data;
         if (!userId || !role) return jsonError('Missing required fields', 400);
         const { error } = await supabase.from('app_users').update({ role }).eq('id', userId);
@@ -559,6 +563,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'getDebtMatrixData': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { data: rows, error } = await supabase
           .from('orders')
           .select('id, total_amount, status, created_at, app_users(full_name, email, phone_number, business_name)')
@@ -569,6 +574,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'getSalesSummaryData': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { data: rows, error } = await supabase
           .from('orders')
           .select('id, total_amount, discount_amount, status, created_at, app_users(role, business_name), order_items(quantity, unit_price, products(name))')
@@ -579,6 +585,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'getPartnerDirectoryData': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { data: rows, error } = await supabase
           .from('app_users')
           .select('*')

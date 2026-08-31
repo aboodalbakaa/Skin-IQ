@@ -20,7 +20,7 @@ import {
   type PricingTier,
 } from './order-pricing';
 
-type AdminClient = SupabaseClient<any>;
+type AdminClient = SupabaseClient;
 
 interface RawOrder {
   id: string;
@@ -146,8 +146,9 @@ interface TelegramLedgerEntry {
 
 interface ReconciliationApplyRecord {
   batchId: string;
+  status: 'applying' | 'complete' | 'failed';
   verifiedManifestHash: string;
-  summary: ReconciliationSummary;
+  summary?: ReconciliationSummary;
 }
 
 const AUDIT_BUCKET = 'admin-audits';
@@ -198,7 +199,15 @@ async function uploadJson(
 
 async function downloadJson<T>(supabase: AdminClient, path: string): Promise<T | null> {
   const { data, error } = await supabase.storage.from(AUDIT_BUCKET).download(path);
-  if (error || !data) return null;
+  if (error) {
+    const storageError = error as { message?: string; statusCode?: string | number };
+    const statusCode = Number(storageError.statusCode);
+    const isMissing = statusCode === 404
+      || /(?:object|file).*(?:not found|does not exist)/i.test(storageError.message || '');
+    if (isMissing) return null;
+    throw new Error(`Could not read audit record ${path}: ${storageError.message || 'storage error'}`);
+  }
+  if (!data) return null;
   return JSON.parse(await data.text()) as T;
 }
 
@@ -455,6 +464,14 @@ export async function applyOrderReconciliation(
     createdAt: new Date().toISOString(),
     manifest: before,
   }, false);
+  const applyResultPath = `${BATCH_ID}/apply-result.json`;
+  await uploadJson(supabase, applyResultPath, {
+    batchId: BATCH_ID,
+    status: 'applying',
+    actorId,
+    startedAt: new Date().toISOString(),
+    backupPath,
+  }, true);
 
   const changedItems = before.orders.flatMap((order) => order.items)
     .filter((item) => item.oldUnitPrice !== item.newUnitPrice);
@@ -491,8 +508,9 @@ export async function applyOrderReconciliation(
       throw new Error('Post-apply verification found unreconciled rows.');
     }
 
-    await uploadJson(supabase, `${BATCH_ID}/apply-result.json`, {
+    await uploadJson(supabase, applyResultPath, {
       batchId: BATCH_ID,
+      status: 'complete',
       actorId,
       appliedAt: new Date().toISOString(),
       sourceManifestHash: before.manifestHash,
@@ -529,8 +547,25 @@ export async function applyOrderReconciliation(
     });
 
     if (rollbackErrors.length > 0) {
+      await uploadJson(supabase, applyResultPath, {
+        batchId: BATCH_ID,
+        status: 'failed',
+        actorId,
+        failedAt: new Date().toISOString(),
+        backupPath,
+        rollbackErrors,
+      }, true).catch(() => undefined);
       throw new Error(`Apply failed and rollback was incomplete. Backup: ${backupPath}. ${rollbackErrors.join('; ')}`);
     }
+    await uploadJson(supabase, applyResultPath, {
+      batchId: BATCH_ID,
+      status: 'failed',
+      actorId,
+      failedAt: new Date().toISOString(),
+      backupPath,
+      error: applyError instanceof Error ? applyError.message : String(applyError),
+      rollbackComplete: true,
+    }, true).catch(() => undefined);
     throw new Error(`Apply failed; all completed changes were rolled back. Backup: ${backupPath}. ${applyError instanceof Error ? applyError.message : String(applyError)}`);
   }
 }
@@ -610,6 +645,8 @@ export async function sendCorrectedPendingOrderNotification(
   );
   if (!applyRecord
     || applyRecord.batchId !== BATCH_ID
+    || applyRecord.status !== 'complete'
+    || !applyRecord.summary
     || applyRecord.summary.changedItemCount !== 0
     || applyRecord.summary.changedOrderCount !== 0) {
     throw new Error('Telegram corrections are blocked until the frozen reconciliation is applied and verified.');
@@ -620,8 +657,8 @@ export async function sendCorrectedPendingOrderNotification(
   if (existing?.state === 'sent') {
     return { ok: true, alreadySent: true, orderId, telegramMessageId: existing.telegramMessageId };
   }
-  if (existing?.state === 'sending' || existing?.state === 'uncertain') {
-    throw new Error(`Order ${orderId} has an uncertain prior Telegram attempt and will not be retried automatically.`);
+  if (existing) {
+    throw new Error(`Order ${orderId} already has a ${existing.state} Telegram ledger entry and will not be retried automatically.`);
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -639,7 +676,9 @@ export async function sendCorrectedPendingOrderNotification(
     attemptedAt,
     actorId,
   };
-  await uploadJson(supabase, ledgerPath, baseLedger, true);
+  // A create-only write is the dispatch lock. If two requests race, only one
+  // can claim the order before contacting Telegram.
+  await uploadJson(supabase, ledgerPath, baseLedger, false);
 
   let response: Response;
   try {
@@ -672,7 +711,7 @@ export async function sendCorrectedPendingOrderNotification(
     throw new Error(`Telegram rejected order ${orderId} with HTTP ${response.status}.`);
   }
 
-  let telegramBody: any;
+  let telegramBody: { ok?: boolean; result?: { message_id?: number } } | null;
   try {
     telegramBody = JSON.parse(responseText);
   } catch {
@@ -719,8 +758,11 @@ export async function getCorrectionNotificationStatus(supabase: AdminClient) {
   const uncertain: string[] = [];
   const failed: string[] = [];
 
-  for (const orderId of ledgerIds) {
-    const entry = await downloadJson<TelegramLedgerEntry>(supabase, `${TELEGRAM_LEDGER_PREFIX}/${orderId}.json`);
+  const entries = await Promise.all([...ledgerIds].map(async (orderId) => ({
+    orderId,
+    entry: await downloadJson<TelegramLedgerEntry>(supabase, `${TELEGRAM_LEDGER_PREFIX}/${orderId}.json`),
+  })));
+  for (const { orderId, entry } of entries) {
     if (entry?.state === 'sent') sent.push(orderId);
     else if (entry?.state === 'failed') failed.push(orderId);
     else if (entry) uncertain.push(orderId);

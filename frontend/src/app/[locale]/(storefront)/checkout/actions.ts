@@ -25,6 +25,32 @@ interface CheckoutPayload {
   items: CheckoutItem[];
 }
 
+interface CheckoutProduct {
+  id: string;
+  name: string;
+  retail_price: number | string;
+  wholesale_price: number | string;
+  discount_retail_price: number | string | null;
+  discount_wholesale_price: number | string | null;
+  is_active: boolean;
+  is_out_of_stock: boolean;
+}
+
+interface CheckoutBundle {
+  id: string;
+  title_ar: string | null;
+  bundle_price: number | string;
+  is_active: boolean;
+}
+
+interface PendingOrderItem {
+  order_id: string;
+  product_id: string | null;
+  bundle_offer_id: string | null;
+  quantity: number;
+  unit_price: number;
+}
+
 export async function submitSpotOrder({ 
   contact_name, 
   contact_phone, 
@@ -40,11 +66,15 @@ export async function submitSpotOrder({
   let pricingTier: PricingTier = 'RETAIL';
 
   if (userId) {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('app_users')
       .select('role')
       .eq('id', userId)
       .single();
+    if (profileError || !profile) {
+      console.error('Pricing role lookup failed:', profileError);
+      return { error: 'Unable to verify your account pricing. Please try again.' };
+    }
     if (profile?.role === 'WHOLESALE') pricingTier = 'WHOLESALE';
   }
 
@@ -55,21 +85,26 @@ export async function submitSpotOrder({
   const [productsResult, bundlesResult] = await Promise.all([
     productIds.length > 0
       ? supabase.from('products').select('id, name, retail_price, wholesale_price, discount_retail_price, discount_wholesale_price, is_active, is_out_of_stock').in('id', productIds)
-      : { data: [] },
+      : { data: [] as CheckoutProduct[], error: null },
     bundleIds.length > 0
       ? supabase.from('bundle_offers').select('id, title_ar, bundle_price, is_active').in('id', bundleIds)
-      : { data: [] },
+      : { data: [] as CheckoutBundle[], error: null },
   ]);
 
-  const products = (productsResult.data || []) as any[];
-  const bundles = (bundlesResult.data || []) as any[];
+  if (productsResult.error || bundlesResult.error) {
+    console.error('Checkout catalog lookup failed:', productsResult.error || bundlesResult.error);
+    return { error: 'Unable to verify current product prices. Please try again.' };
+  }
+
+  const products = (productsResult.data || []) as CheckoutProduct[];
+  const bundles = (bundlesResult.data || []) as CheckoutBundle[];
 
   const productMap = new Map(products.map(p => [p.id, p]));
   const bundleMap = new Map(bundles.map(b => [b.id, b]));
 
   // ── STEP 2: Validate items exist, are active, and in stock ──
   let itemsSubtotal = 0;
-  const orderItemsData: any[] = [];
+  const orderItemsData: PendingOrderItem[] = [];
 
   for (const item of items) {
     const isBundle = item.id.startsWith('bundle-');
@@ -121,15 +156,21 @@ export async function submitSpotOrder({
   let discountAmount = 0;
   let validatedPromoCode: string | null = null;
 
-  if (promo_code) {
-    const { data: promoData } = await supabase
+  const normalizedPromoCode = promo_code?.trim().toUpperCase() || '';
+  if (normalizedPromoCode) {
+    const { data: promoData, error: promoError } = await supabase
       .from('promo_codes')
       .select('discount_type, discount_value, is_active')
-      .eq('code', promo_code.toUpperCase())
-      .single();
+      .eq('code', normalizedPromoCode)
+      .maybeSingle();
+
+    if (promoError) {
+      console.error('Promo verification failed:', promoError);
+      return { error: 'Unable to verify the promo code. Please try again.' };
+    }
 
     if (promoData && promoData.is_active) {
-      validatedPromoCode = promo_code.toUpperCase();
+      validatedPromoCode = normalizedPromoCode;
       discountAmount = calculatePromoDiscount(itemsSubtotal, promoData);
     }
   }
