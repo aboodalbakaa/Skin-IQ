@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useTransition } from 'react';
-import { Pencil, Trash2, Eye, EyeOff, Plus, Search, Package, Loader2, AlertTriangle, Flame } from 'lucide-react';
+import { Pencil, Trash2, Eye, EyeOff, Plus, Search, Package, Loader2, Flame } from 'lucide-react';
 import BundleOfferForm from './BundleOfferForm';
-import { useRouter } from 'next/navigation';
 import { postAdminJson } from '@/utils/admin-api';
 
 export interface BundleOffer {
@@ -22,10 +21,10 @@ export interface BundleOffer {
 
 interface BundleOfferTableProps {
   offers: BundleOffer[];
+  onOffersChanged?: () => void | Promise<void>;
 }
 
-export default function BundleOfferTable({ offers }: BundleOfferTableProps) {
-  const router = useRouter();
+export default function BundleOfferTable({ offers, onOffersChanged }: BundleOfferTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingOffer, setEditingOffer] = useState<BundleOffer | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -53,7 +52,7 @@ export default function BundleOfferTable({ offers }: BundleOfferTableProps) {
       try {
         await postAdminJson('deleteBundleOffer', { id: offer.id, imageUrl: offer.image_url });
         setConfirmDelete(null);
-        router.refresh();
+        await onOffersChanged?.();
       } finally {
         setDeletingId(null);
       }
@@ -63,7 +62,7 @@ export default function BundleOfferTable({ offers }: BundleOfferTableProps) {
   const handleToggleActive = (offer: BundleOffer) => {
     startTransition(async () => {
       await postAdminJson('toggleBundleActive', { id: offer.id, is_active: !offer.is_active });
-      router.refresh();
+      await onOffersChanged?.();
     });
   };
 
@@ -216,7 +215,11 @@ export default function BundleOfferTable({ offers }: BundleOfferTableProps) {
         <BundleOfferForm
           offer={editingOffer}
           onClose={() => { setShowForm(false); setEditingOffer(null); }}
-          onSuccess={() => { setShowForm(false); setEditingOffer(null); router.refresh(); }}
+          onSuccess={async () => {
+            setShowForm(false);
+            setEditingOffer(null);
+            await onOffersChanged?.();
+          }}
         />
       )}
     </>

@@ -1,53 +1,68 @@
-import { createAdminClient } from '@/utils/supabase/admin';
-import { getAdminRole } from '@/utils/supabase/server';
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
 import { Globe, Monitor, Smartphone, Tablet, Navigation, Activity, BarChart3, TrendingUp } from 'lucide-react';
-import { redirect } from 'next/navigation';
+import { postAdminJson } from '@/utils/admin-api';
 
-export default async function TrafficInsights() {
-  const auth = await getAdminRole();
+export const dynamic = 'force-dynamic';
 
-  if (!auth.authorized) {
-    redirect('/en/admin-login');
+interface TrafficData {
+  totalVisits: number;
+  recentVisits: number;
+  sortedPages: [string, number][];
+  deviceMap: Record<string, number>;
+  sampledViewCount: number;
+}
+
+export default function TrafficInsights() {
+  const [data, setData] = useState<TrafficData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadTraffic = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setData(await postAdminJson<TrafficData>('getTrafficInsights'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load traffic insights');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTraffic();
+  }, [loadTraffic]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, index) => (
+          <div key={index} className="h-40 bg-slate-200 dark:bg-slate-800 rounded-[2.5rem] animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
-  const supabase = createAdminClient();
+  if (error || !data) {
+    return (
+      <div className="max-w-6xl mx-auto p-8">
+        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
+          <p className="font-medium">Error loading traffic insights</p>
+          <p className="text-sm mt-1 opacity-75">{error || 'No traffic data was returned'}</p>
+          <button
+            onClick={loadTraffic}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  // 1. Fetch Summary Data
-  const { count: totalVisits } = await supabase
-    .from('page_views')
-    .select('*', { count: 'exact', head: true });
-
-  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { count: recentVisits } = await supabase
-    .from('page_views')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', twentyFourHoursAgo);
-
-  // 2. Fetch Top Pages
-  const { data: topPages } = await supabase.rpc('get_top_pages'); // We'll need to create this RPC or do it manually
-
-  // Since RPC might not exist, let's fetch raw and aggregate if needed, 
-  // but for simplicity and performance, we'll fetch last 1000 and group in memory or use a simpler query.
-  const { data: latestViews } = await supabase
-    .from('page_views')
-    .select('path, device_type, browser')
-    .order('created_at', { ascending: false })
-    .limit(1000);
-
-  // Aggregate Top Pages
-  const pageMap: Record<string, number> = {};
-  const deviceMap: Record<string, number> = { 'Desktop': 0, 'Mobile': 0, 'Tablet': 0 };
-  const browserMap: Record<string, number> = {};
-
-  (latestViews || []).forEach(view => {
-    pageMap[view.path] = (pageMap[view.path] || 0) + 1;
-    deviceMap[view.device_type] = (deviceMap[view.device_type] || 0) + 1;
-    browserMap[view.browser] = (browserMap[view.browser] || 0) + 1;
-  });
-
-  const sortedPages = Object.entries(pageMap)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
+  const { totalVisits, recentVisits, sortedPages, deviceMap, sampledViewCount } = data;
 
   return (
     <div className="max-w-6xl mx-auto p-8">
@@ -150,7 +165,7 @@ export default async function TrafficInsights() {
                 { label: 'Desktop', icon: Monitor, count: deviceMap['Desktop'], color: 'text-blue-500', bg: 'bg-blue-500' },
                 { label: 'Tablet', icon: Tablet, count: deviceMap['Tablet'], color: 'text-amber-500', bg: 'bg-amber-500' }
               ].map((device) => {
-                const percentage = Math.round((device.count / (latestViews?.length || 1)) * 100);
+                const percentage = Math.round((device.count / (sampledViewCount || 1)) * 100);
                 return (
                   <div key={device.label} className="space-y-3">
                     <div className="flex items-center justify-between">

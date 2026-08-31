@@ -1,39 +1,34 @@
-import { createAdminClient } from '@/utils/supabase/admin';
-import { getAdminRole } from '@/utils/supabase/server';
-import UserManagementTable from './UserManagementTable';
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function UserManagementPage({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ filter?: string }> 
-}) {
-  const { filter } = await searchParams;
-  const auth = await getAdminRole();
+import { useCallback, useEffect, useState } from 'react';
+import UserManagementTable, { type AppUser } from './UserManagementTable';
+import { postAdminJson } from '@/utils/admin-api';
 
-  if (!auth.authorized) {
-    redirect('/en/admin-login');
-  }
+export const dynamic = 'force-dynamic';
 
-  if (auth.role === 'MANAGER') {
-    redirect('/en/admin/products');
-  }
+export default function UserManagementPage() {
+  const [users, setUsers] = useState<AppUser[]>([]);
+  const [filter, setFilter] = useState<string | undefined>();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const supabase = createAdminClient();
+  const loadUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const loadedUsers = await postAdminJson<AppUser[]>('getAllUsers');
+      setFilter(new URLSearchParams(window.location.search).get('filter') || undefined);
+      setUsers(loadedUsers);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load users');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // Fetch all users for management
-  const { data: users, error } = await supabase
-    .from('app_users')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    return (
-      <div className="p-6 bg-red-50 text-red-600 rounded-2xl border border-red-100">
-        Error loading users: {error.message}
-      </div>
-    );
-  }
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   return (
     <div className="max-w-7xl mx-auto w-full space-y-12">
@@ -44,8 +39,30 @@ export default async function UserManagementPage({
         </div>
       </div>
 
-      <UserManagementTable initialUsers={users || []} filter={filter} />
+      {loading && (
+        <div className="grid gap-4">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
+          <p className="font-medium">Error loading users</p>
+          <p className="text-sm mt-1 opacity-75">{error}</p>
+          <button
+            onClick={loadUsers}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <UserManagementTable initialUsers={users} filter={filter} />
+      )}
     </div>
   );
 }
-

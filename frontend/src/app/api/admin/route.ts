@@ -424,6 +424,39 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
       }
 
+      case 'getAllOrders': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
+        const { data: orders, error } = await supabase
+          .from('orders')
+          .select(`
+            *,
+            app_users (
+              full_name,
+              business_name,
+              phone_number
+            ),
+            order_items (
+              id,
+              product_id,
+              bundle_offer_id,
+              quantity,
+              unit_price,
+              products (
+                name,
+                image_url
+              ),
+              bundle_offers (
+                title_en,
+                title_ar,
+                image_url
+              )
+            )
+          `)
+          .order('created_at', { ascending: false });
+        if (error) return jsonError(error.message);
+        return NextResponse.json((orders || []).map((order) => withOrderBreakdown(order)));
+      }
+
       case 'updateOrderStatus': {
         if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { orderId, status } = data;
@@ -433,6 +466,16 @@ export async function POST(request: NextRequest) {
         revalidatePath('/admin/orders');
         revalidatePath('/admin');
         return NextResponse.json({ success: true });
+      }
+
+      case 'getAllUsers': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
+        const { data: users, error } = await supabase
+          .from('app_users')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) return jsonError(error.message);
+        return NextResponse.json(users || []);
       }
 
       case 'updateUserRole': {
@@ -599,12 +642,50 @@ export async function POST(request: NextRequest) {
       }
 
       case 'getInventoryAuditData': {
+        if (!['ADMIN', 'SUPER_ADMIN'].includes(admin.role)) return jsonError('Forbidden', 403);
         const { data: rows, error } = await supabase
           .from('products')
           .select('*')
           .order('name', { ascending: true });
         if (error) return jsonError(error.message);
         return NextResponse.json(rows || []);
+      }
+
+      case 'getTrafficInsights': {
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const [totalResult, recentResult, latestResult] = await Promise.all([
+          supabase.from('page_views').select('*', { count: 'exact', head: true }),
+          supabase.from('page_views').select('*', { count: 'exact', head: true })
+            .gte('created_at', twentyFourHoursAgo),
+          supabase.from('page_views').select('path, device_type')
+            .order('created_at', { ascending: false })
+            .limit(1000),
+        ]);
+
+        const queryError = totalResult.error || recentResult.error || latestResult.error;
+        if (queryError) return jsonError(queryError.message);
+
+        const pageMap: Record<string, number> = {};
+        const deviceMap: Record<string, number> = { Desktop: 0, Mobile: 0, Tablet: 0 };
+
+        (latestResult.data || []).forEach((view) => {
+          const path = view.path || '/';
+          const deviceType = view.device_type || 'Desktop';
+          pageMap[path] = (pageMap[path] || 0) + 1;
+          deviceMap[deviceType] = (deviceMap[deviceType] || 0) + 1;
+        });
+
+        const sortedPages = Object.entries(pageMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+
+        return NextResponse.json({
+          totalVisits: totalResult.count || 0,
+          recentVisits: recentResult.count || 0,
+          sortedPages,
+          deviceMap,
+          sampledViewCount: latestResult.data?.length || 0,
+        });
       }
 
       case 'getHeroConfig': {

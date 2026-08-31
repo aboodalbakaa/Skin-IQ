@@ -1,19 +1,7 @@
-import { getAdminRole } from '@/utils/supabase/server';
 import ReportManager from '@/components/admin/ReportManager';
 import { FileText } from 'lucide-react';
-import { redirect } from 'next/navigation';
 
-export default async function AdminReports() {
-  const auth = await getAdminRole();
-
-  if (!auth.authorized) {
-    redirect('/en/admin-login');
-  }
-
-  if (auth.role === 'MANAGER') {
-    redirect('/en/admin/products');
-  }
-
+export default function AdminReports() {
   return (
     <div className="max-w-6xl mx-auto w-full space-y-12 pb-20">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">

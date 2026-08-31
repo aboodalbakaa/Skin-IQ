@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import { postAdminJson } from '@/utils/admin-api';
 import { calculateOrderBreakdown, DELIVERY_FEE_IQD } from '@/lib/order-pricing';
 
-interface OrderItem {
+export interface OrderItem {
   id: string;
   product_id: string | null;
   bundle_offer_id: string | null;
@@ -38,7 +38,7 @@ interface OrderItem {
   } | null;
 }
 
-interface Order {
+export interface Order {
   id: string;
   created_at: string;
   total_amount: number;

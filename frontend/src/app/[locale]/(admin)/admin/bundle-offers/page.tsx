@@ -1,28 +1,56 @@
-import { createAdminClient } from '@/utils/supabase/admin';
-import { getAdminRole } from '@/utils/supabase/server';
-import BundleOfferTable from '@/components/admin/BundleOfferTable';
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function AdminBundleOffers() {
-  const auth = await getAdminRole();
+import { useCallback, useEffect, useState } from 'react';
+import BundleOfferTable, { type BundleOffer } from '@/components/admin/BundleOfferTable';
+import { postAdminJson } from '@/utils/admin-api';
 
-  if (!auth.authorized) {
-    redirect('/en/admin-login');
+export const dynamic = 'force-dynamic';
+
+export default function AdminBundleOffers() {
+  const [offers, setOffers] = useState<BundleOffer[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadOffers = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setOffers(await postAdminJson<BundleOffer[]>('getBundleOffers'));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load bundle offers');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOffers();
+  }, [loadOffers]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto w-full">
+        <div className="grid gap-4">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
   }
-
-  const supabase = createAdminClient();
-
-  const { data: offers, error } = await supabase
-    .from('bundle_offers')
-    .select('*')
-    .order('sort_order', { ascending: true });
 
   if (error) {
     return (
       <div className="max-w-6xl mx-auto w-full">
-        <div className="p-6 bg-red-50 text-red-600 rounded-2xl border border-red-100">
+        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
           <p className="font-medium">Error loading bundle offers</p>
-          <p className="text-sm mt-1 opacity-75">{error.message}</p>
+          <p className="text-sm mt-1 opacity-75">{error}</p>
+          <button
+            onClick={loadOffers}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -30,7 +58,7 @@ export default async function AdminBundleOffers() {
 
   return (
     <div className="max-w-6xl mx-auto w-full">
-      <BundleOfferTable offers={offers || []} />
+      <BundleOfferTable offers={offers} onOffersChanged={loadOffers} />
     </div>
   );
 }

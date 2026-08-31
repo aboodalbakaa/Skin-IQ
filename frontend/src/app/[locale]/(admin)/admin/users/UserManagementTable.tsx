@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { User, Search, Shield, MoreHorizontal, CheckCircle } from 'lucide-react';
 import { postAdminJson } from '@/utils/admin-api';
 
-interface AppUser {
+export interface AppUser {
   id: string;
   email: string | null;
   full_name: string | null;

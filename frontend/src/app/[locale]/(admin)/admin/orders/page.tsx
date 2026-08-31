@@ -1,56 +1,34 @@
-import { createAdminClient } from '@/utils/supabase/admin';
-import { getAdminRole } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
-import OrderManagement from '@/components/admin/OrderManagement';
+'use client';
 
-export default async function AdminOrders({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ query?: string }> 
-}) {
-  const { query: initialQuery } = await searchParams;
-  const auth = await getAdminRole();
+import { useCallback, useEffect, useState } from 'react';
+import OrderManagement, { type Order } from '@/components/admin/OrderManagement';
+import { postAdminJson } from '@/utils/admin-api';
 
-  if (!auth.authorized) {
-    redirect('/en/admin-login');
-  }
+export const dynamic = 'force-dynamic';
 
-  if (auth.role === 'MANAGER') {
-    redirect('/en/admin/products');
-  }
+export default function AdminOrders() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [initialQuery, setInitialQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const supabase = createAdminClient();
+  const loadOrders = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const loadedOrders = await postAdminJson<Order[]>('getAllOrders');
+      setInitialQuery(new URLSearchParams(window.location.search).get('query') || '');
+      setOrders(loadedOrders);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const { data: rawOrders } = await supabase
-    .from('orders')
-    .select(`
-      *,
-      app_users (
-        full_name,
-        business_name,
-        phone_number
-      ),
-      order_items (
-        id,
-        product_id,
-        bundle_offer_id,
-        quantity,
-        unit_price,
-        products (
-          name,
-          image_url
-        ),
-        bundle_offers (
-          title_en,
-          title_ar,
-          image_url
-        )
-      )
-    `)
-    .order('created_at', { ascending: false });
-
-  // Map and cast to our expected type
-  const orders = (rawOrders || []) as any[];
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   return (
     <div className="max-w-6xl mx-auto w-full">
@@ -64,7 +42,30 @@ export default async function AdminOrders({
         </div>
       </div>
 
-      <OrderManagement initialOrders={orders} initialQuery={initialQuery} />
+      {loading && (
+        <div className="grid gap-4">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="p-6 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-500/20">
+          <p className="font-medium">Error loading orders</p>
+          <p className="text-sm mt-1 opacity-75">{error}</p>
+          <button
+            onClick={loadOrders}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <OrderManagement initialOrders={orders} initialQuery={initialQuery} />
+      )}
     </div>
   );
 }
